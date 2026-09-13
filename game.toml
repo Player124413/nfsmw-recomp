@@ -1,0 +1,63 @@
+# game.toml - everything the kit needs to know about Need for Speed: Most
+# Wanted (Black Edition, PC) that is not derivable from the binary. Addresses
+# are guest addresses in the pinned executable. Values marked "sentinel" are
+# not identified yet: they point into the zero-filled section padding after
+# .rsrc (0x00a37700-0x00a37fff), which the game never references, so the
+# kit's Populous-shaped hooks compile and never fire. Replace each one with a
+# real address as the bring-up finds it (see docs/analysis.md).
+
+[game]
+id = "nfsmw"
+name = "Need for Speed: Most Wanted"
+app_name = "SpeedRecomp"
+bundle_id = "dev.recompkit.nfsmw"
+executable = "speed.exe"
+sha256 = "80774c2e5d619b4f120b48d4462896fd504c263399d203a238769cffde1d253c"
+image_base = 0x00400000
+entry_point = 0x007c4040
+guest_root = 'C:\Program Files\EA GAMES\Need for Speed Most Wanted'
+# Where a developer checkout finds the game, relative to the repository root.
+developer_exe = "original/retail/speed.exe"
+
+[translate]
+# Ghidra listing directory holding functions.tsv and functions/*.asm,
+# relative to the repository root. tools/analyze.py exports them.
+listings = "analysis/decompiled/speed.exe"
+# Curated symbols, relative to this directory.
+globals = "globals.toml"
+# The kit's translator wants a visual-phase counter; this game has none that
+# has been audited. Sentinel, and no reads are rewritten.
+animation_counter = 0x00a37f00
+volatile_reads = []
+
+[hooks]
+# runtime/kernel32.cpp native_frame_clock: GetTickCount return addresses of
+# the draw-loop waits. Not identified; sentinels (never a return address).
+frame_clock_begin = 0x00a37f10
+frame_clock_wait = 0x00a37f14
+frame_clock_wait_clamp = 0x00a37f18
+frame_clock_clamp_deadline = 0x00a37f20
+frame_clock_wait_deadline = 0x00a37f24
+# dx/ddraw.cpp: mouse-pointer surface globals. This game draws with Direct3D 9
+# and never creates DirectDraw surfaces; sentinels.
+cursor_surface_ptrs = [0x00a37f30, 0x00a37f34]
+# host/input_gate.cpp: the game's mouse device object and its vtable.
+# Not identified (the game uses DirectInput8Create); sentinels.
+mouse_vtable = 0x00a37f40
+mouse_device_ptr = 0x00a37f44
+mouse_device_right = 0x00a37f48
+# host/smoke_main.cpp: the camera record the smoke script inspects. Sentinel.
+camera = 0x00a37f50
+
+[setup]
+# tools/setup.py: what a supported installation must contain. No annotation
+# metadata exists for this executable; tools/analyze.py runs Ghidra's own
+# analysis instead of importing one.
+required_dirs = ["CARS", "FRONTEND", "GLOBAL", "SOUND", "TRACKS"]
+
+[bundle]
+# Left out of the iOS bundle: the uninstaller, the manual, the Windows-only
+# ASI loader and widescreen fix, LAN server, installer helpers, the 856 MB of
+# VP6 cinematics no shim decodes yet, and the repack's saves.
+exclude = ["Uninstall", "Support", "scripts", "MOVIES", "SAVE", "foobar",
+           "*.dll", "*_inst.exe", "*.txt", "server.cfg"]

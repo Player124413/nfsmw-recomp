@@ -1,0 +1,23 @@
+# Changelog
+
+## Unreleased
+
+- New game repository for Need for Speed: Most Wanted (PC Black Edition,
+  `speed.exe` SHA-256 `80774c2e…d253c`) in the shape of populous-recomp: the
+  kit as the submodule `kit/`, `game.toml` and `globals.toml`, thin
+  `tools/*.py` wrappers, config tests and CI.
+- `game.toml` carries the measured identity of the executable (image base
+  `0x00400000`, entry point `0x007c4040`, guest root, required data
+  directories, iOS bundle exclusions). The Populous-shaped hooks and globals
+  the kit compiles against are sentinels in the executable's unused section
+  padding until the bring-up identifies them; `tests/test_game_config.py`
+  enforces that.
+- `tools/analyze.py`: listing export with Ghidra's own analyzers, because the
+  kit's setup expects a curated annotation set this game does not have.
+- First pipeline run recorded in `docs/analysis.md`: Ghidra exports 25,768
+  functions; the kit's translator parses them all and stops at its discovery
+  gates (638 dispatch targets outside any listing, mostly fall-throughs after
+  calls Ghidra marks non-returning). No translation compiles yet.
+- `docs/analysis.md`: the executable's import surface, graphics path and the
+  kit work each needs. The blocking item is shader-model Direct3D 9 through
+  D3DX effects, outside the kit's supported envelope today.
