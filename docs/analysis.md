@@ -132,6 +132,44 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-17: what a rasterizer would draw, and why it would still be black
+
+The draw path now decodes each vertex declaration and prints the vertices.
+The seven opening draws are three kinds of quad:
+
+| Draws | Layout | Where | What it is |
+| --- | --- | --- | --- |
+| 1-5 | `POSITION` float3, `COLOR`, four `TEXCOORD` pairs with sub-texel offsets | 160x120 off-screen targets | a separable filter chain: blur or downsample |
+| 6 | `POSITION` float4, one `TEXCOORD` | the back buffer, full screen | the final composite |
+| 7 | `POSITION` float3, `COLOR` `0x80808080`, one `TEXCOORD` | the back buffer, a 16x32-pixel corner | a small textured indicator |
+
+All positions are in clip space, from -1 to 1, so the effects' vertex stages
+pass them through and a viewport transform is all a rasterizer needs for
+these. That part would be easy.
+
+It would not produce a picture. Every target those passes read was cleared to
+black and no scene has been drawn into any of them, so the filter chain and
+the composite are black in, black out. Only draw 7 could light pixels, and
+its texture, like every texture in these draws, is bound through
+`ID3DXEffect::SetTexture`. The effect is accepted without being parsed, so
+the device has no idea what is bound: every draw reports texture 0.
+
+This settles the order of the remaining work, and it is not the order a
+quick look suggested. A quad filler first would show, at best, a grey square
+in a corner. The first real image needs:
+
+1. the compiled effect format parsed, so parameters, techniques, passes,
+   sampler bindings and render states are known;
+2. `SetTexture`, `SetMatrix` and the rest of the parameter calls recorded
+   against those parameters;
+3. each pass's vertex and pixel shader bytecode translated and executed,
+   on Metal or on the CPU;
+4. the world itself, which the game has not started drawing in this part of
+   the run.
+
+That is the large piece this port was always going to need, and it is now the
+only piece left in front of a picture.
+
 #### 2026-09-17: the first presented frames, and why they are black
 
 The presenter now accepts 32-bit frames, and the Direct3D 9 device clears,
