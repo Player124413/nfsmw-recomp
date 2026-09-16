@@ -10,7 +10,10 @@
   kernel32 shims and stdcall pop counts for the unshimmed imports. Recorded
   in `docs/analysis.md`. The window path works too: `RegisterClassExA`,
   `AdjustWindowRect` and `GlobalMemoryStatusEx` landed in the kit, and the
-  guest stack no longer drifts, so the only remaining blocker is Direct3D 9.
+  guest stack no longer drifts. With the kit's new Direct3D 9 and D3DX 9
+  modules the game now boots, creates its device, streams its audio and runs
+  its own render loop without crashing. It draws nothing yet: device
+  resources and shader translation are the remaining work.
 - Re-pin the kit to `main` 4574a35, the commit the other game repositories
   pin; `game.toml` gains the `entry_points` key and CI takes the current
   three-platform shape. On this kit the translator clears discovery and

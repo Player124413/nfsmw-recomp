@@ -132,6 +132,81 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16 (later still): the game runs
+
+With the effect descriptions filled in, the game stopped hanging and simply
+ran. It was stopped by hand after about three minutes; it had not crashed,
+and it was using a full core.
+
+What it did in that time:
+
+| | |
+| --- | --- |
+| Direct3D | created its device, cleared, presented, and asked for the resources it wants to draw with |
+| Effects | loaded `IDI_WORLD_FX`, walked its parameters, validated a technique, set values on it |
+| Sound | created DirectSound buffers and streamed them: 2,815 sink pulls, none late, none starved |
+| Threads | guest worker threads reached the host and were serviced |
+
+The resources it asks the device for, and does not get, are now a list rather
+than a guess:
+
+```text
+CreateTexture            CreateCubeTexture        CreateVertexBuffer
+CreateIndexBuffer        CreateVertexDeclaration  CreateDepthStencilSurface
+CreateQuery              GetBackBuffer            GetDepthStencilSurface
+SetRenderTarget          SetDepthStencilSurface
+```
+
+and from the effect: `SetInt`, `ValidateTechnique`, `GetAnnotationByName`,
+`OnLostDevice`. The seven remaining "call to unknown target" lines are the
+game calling methods on the interfaces those creators never returned.
+
+**What this is and is not.** The game boots, runs, streams its audio and
+drives its own render loop without crashing. It draws nothing: there is no
+render target, no swap chain, no texture or buffer storage, and no shader
+translation, so the window stays empty. Sound is real; the picture is not.
+
+The next piece is device resources, which is ordinary work: textures, vertex
+and index buffers, surfaces, and a swap chain wired to the kit's Metal
+backend. After that comes the part that is not ordinary: translating the
+game's compiled shader bytecode, about 120 programs across 31 effects, into
+Metal. That remains the bulk of the port.
+
+#### 2026-09-16 (later): the game creates a device and enters its render loop
+
+Two new kit modules, both on the `nfsmw` branch.
+
+`dx/d3d9.cpp` is Direct3D 9: the factory object, the adapter and format
+queries a game makes before it commits to a device, and `CreateDevice`. The
+device's vtable is complete and in interface order, since a guest calls these
+by slot index, but only a few slots do anything; the rest report themselves
+once and return `D3D_OK`. `dx/d3dx9.cpp` is D3DX 9: the matrix and vector
+maths for real, an effect pool, and effect objects for the effects compiled
+into the executable's resources.
+
+What the game did with them, in one run:
+
+| Step | Evidence |
+| --- | --- |
+| asked for the library | `Direct3DCreate9(SDK 32)` returned an interface |
+| created its device | `CreateDevice 640x480, window 00020004` |
+| entered its render loop | `Clear`, then `Present` |
+| started describing geometry | `CreateVertexDeclaration` |
+| loaded its first effect | `IDI_WORLD_FX`, the world shader |
+| walked the effect's parameters | `GetDesc`, `GetParameter`, `GetParameterDesc` |
+
+It then hung. The descriptor methods returned success without filling the
+structures they were handed, so the game read whatever was already in that
+memory as its parameter and technique counts and iterated on it. The four
+descriptors now zero their structures and report one technique of one pass
+and no parameters, which keeps the game's own loops finite. The process had
+to be killed; it was not a crash.
+
+This is the furthest the port has run. The game is inside its rendering code,
+asking for shader parameters by name. Nothing draws: no render target, no
+swap chain, no shader translation, and the 31 compiled effects are accepted
+without being parsed. Those are the next pieces, and they are the large ones.
+
 #### 2026-09-16: the translation compiles and the game boots to the Direct3D 9 wall
 
 Kit work on branch `nfsmw` of recomp-kit, cut from `main` 4574a35.
