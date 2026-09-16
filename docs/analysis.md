@@ -132,6 +132,36 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16: what the draws contain
+
+The draw entry points now report their arguments. Every draw in the opening
+of the game is the same shape:
+
+```text
+draw 1: triangle fan, 2 primitives, 48-byte vertices inline at 0efff294
+draw 2: triangle fan, 2 primitives, 48-byte vertices inline at 0efff290
+draw 3: triangle fan, 2 primitives, 48-byte vertices inline at 0efff27c
+draw 4: triangle fan, 2 primitives, 48-byte vertices inline at 0efff290
+draw 5: triangle fan, 2 primitives, 48-byte vertices inline at 0efff27c
+draw 6: triangle fan, 2 primitives, 24-byte vertices inline at 0efff368
+draw 7: triangle fan, 2 primitives, 32-byte vertices inline at 0efffa10
+```
+
+Two primitives as a fan is four vertices: a quad. The addresses are in the
+guest stack, so each quad is built as a local and handed to the call. Strides
+of 48, 24 and 32 bytes are three different vertex layouts, which matches the
+12 vertex declarations created earlier.
+
+This says something useful about the order of the remaining work. These are
+screen-space quads - a front end, a loading screen, a fade - not the world.
+A first visible image therefore does not need the 31 compiled effects
+translated to Metal. It needs a swap chain backed by a drawable, the render
+target bound to it, one textured-quad pipeline, and the inline vertices
+uploaded. The world, its shaders and its shadow cube can come afterwards.
+
+That is the smallest honest next milestone: one quad on screen, drawn from
+the game's own vertices and its own texture.
+
 #### 2026-09-16: correction, the game is drawing
 
 The previous entry says no draw call has been reached. That is wrong, and the
