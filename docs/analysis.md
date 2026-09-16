@@ -132,6 +132,70 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16: four pop counts, and a run with no crash in it
+
+Run 11 died at `EIP=0` immediately after `IDirect3DDevice9::CreateTexture`.
+The cause was mine and it was arithmetic: a vtable slot's argument count is
+part of the interface, and four of mine were one short.
+
+| Slot | Declared | Actual |
+| --- | --- | --- |
+| `IDirect3DDevice9::CreateTexture` | 8 | 9 |
+| `IDirect3DDevice9::CreateVolumeTexture` | 9 | 10 |
+| `IDirect3DDevice9::ProcessVertices` | 6 | 7 |
+| `ID3DXEffect::GetParameterBySemantic` | 4 | 3 |
+
+Each call through one of them left four bytes on the guest stack, so the
+caller returned into whatever followed. With the counts corrected, run 12 has
+no SIGBUS in it at all: the game boots, creates its device and resources,
+loads its effects, streams audio through 2,815 sink pulls without a single
+late or starved buffer, and runs until it is stopped.
+
+One call into nothing remains, the cube-texture global described above. It is
+the next thing to chase, and it is a shim question rather than a translation
+one. No draw call has been reached yet.
+
+The whole effect vtable was audited against the SDK signatures afterwards;
+the remaining seventy-odd slots are right.
+
+#### 2026-09-16: device resources, and the last call into nothing
+
+The device now creates what the game asks for: textures, cube textures,
+surfaces, vertex and index buffers, vertex declarations and queries, each an
+object over real guest memory, so a `Lock` hands back storage the game can
+fill. The device keeps its own back buffer and depth buffer and answers
+`GetBackBuffer` and `GetDepthStencilSurface` with them.
+
+| Run | Calls into nothing | How it ended |
+| --- | --- | --- |
+| 9, with resources | 3 | ran the full 90 seconds, stopped by hand |
+| 10, plus two entry points | 1 | SIGBUS in a guest worker thread |
+
+Two of the three were not graphics at all. A vtable slot call at `007ee9fe`
+and a function-pointer call at `00823380` each named a `.text` address no
+listing owned, the same case as the CRT helpers; naming them in
+`[translate] entry_points` removed both.
+
+The survivor is the interesting one, and it is mine. `FUN_006bd4b0` sets up
+the game's shadow-map cube:
+
+```text
+CreateCubeTexture(device, edge, 1, 1, format, 0, &g_cube, 0)   device slot 25
+  then, per face: g_cube->GetCubeMapSurface(face, 0, &g_faces[i])  slot 18
+  and            CreateDepthStencilSurface(...)                    slot 29
+```
+
+The call returned success and `g_cube` stayed null, so the game called
+`GetCubeMapSurface` through a null pointer. Guest address 0 is mapped, so
+reading a vtable through it yields zero and the call goes to nothing rather
+than faulting, which is why this looked like a missing translation. The cause
+was in the shim: every creator reported `D3D_OK` whether or not the interface
+view was actually made. They now report the failure instead, which is both
+correct and the only way the game can take its own fallback path.
+
+Run 10 got further than run 9 and died sooner, which is the normal shape of
+this work: each fix moves the failure later.
+
 #### 2026-09-16 (later still): the game runs
 
 With the effect descriptions filled in, the game stopped hanging and simply
