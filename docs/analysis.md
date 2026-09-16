@@ -132,6 +132,36 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16: six cube faces, and two runs that proved nothing
+
+The cube texture was still being thrown away after one face. The reason was
+mine and it is a COM rule: `GetCubeMapSurface` and `GetSurfaceLevel` hand out
+a view **into** a texture, and taking one references the texture. The game
+does the ordinary thing - take face zero, release the cube, keep using the
+cube for the other five faces - and my standalone surfaces held no reference,
+so that release destroyed it and face one was fetched through a dead pointer.
+Views now reference their container and record it, so `GetContainer` answers
+too. The game walks all six faces.
+
+| | Run 15 | Run 18 |
+| --- | --- | --- |
+| `GetCubeMapSurface` | 1 | 6 |
+| `IDirect3DCubeTexture9::Release` | 1 | 6 |
+| calls into nothing | 1 | 1, and in a different place |
+| draw calls | 0 | 0 |
+
+Runs 16 and 17 are worth recording because they proved nothing and looked as
+though they did. In the first, the edit script hit a failed assertion and
+exited before writing, so the build compiled and ran unmodified code. In the
+second, an anchor matched the wrong function, the compile failed, and the run
+executed the previous binary. Both printed a plausible census, and both
+reported success at the level of exit codes. A run only means something if
+the change is verifiably in the binary that produced it.
+
+The surviving call into nothing has moved, which is the point of fixing these
+one at a time: it used to be in the cube loop and is now in the texture upload
+path, right after `CreateTexture` and `IDirect3DTexture9::LockRect`.
+
 #### 2026-09-16: what the game actually asks for, counted
 
 A verbose run (`RECOMP_LOG=2`) for forty seconds, with no crash in it, made
