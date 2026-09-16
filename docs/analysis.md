@@ -132,6 +132,41 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16: correction, the game is drawing
+
+The previous entry says no draw call has been reached. That is wrong, and the
+error was in how I counted rather than in the run. The census tested for
+`DrawPrimitive` and `DrawIndexedPrimitive`; this game draws with
+`DrawPrimitiveUP`, which matches neither test. Run 19 contains seven draw
+calls, and they sit exactly where draws belong:
+
+```text
+ID3DXEffect::Begin          12
+ID3DXEffect::BeginPass       7
+ID3DXEffect::CommitChanges   7
+IDirect3DDevice9::DrawPrimitiveUP   7
+ID3DXEffect::EndPass         7
+ID3DXEffect::End            12
+```
+
+`UP` means user pointer: the geometry is passed inline with the call rather
+than from a bound vertex buffer, which is why `SetStreamSource` never appears
+while `CreateVertexBuffer` and its locks do.
+
+So the full shape of a frame is present: render target and depth surface
+selected, viewport and transforms set, render states and texture stage states
+applied, an effect technique begun, a pass begun, parameters committed,
+geometry drawn, the pass and effect ended, and the frame presented. Fifty
+`SetRenderState` calls, 26 render-target switches, 20 texture-stage settings
+and 14 viewport changes say the same thing.
+
+Nothing is unresolved and nothing is rasterized. The kit records these draws
+and produces no pixels, so the window stays empty. What stands between here
+and an image is the GPU work itself: a swap chain and render targets backed by
+Metal textures, vertex and index data uploaded, and the shader programs the
+effects carry translated to Metal. That is the large remaining piece, and it
+is unchanged by today.
+
 #### 2026-09-16: nothing unresolved
 
 `IDirect3DTexture9::LockRect` takes five dwords with `this` and the cube form

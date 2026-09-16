@@ -14,7 +14,9 @@
   modules the game now boots, creates its device, streams its audio and runs
   its own render loop without crashing. It draws nothing yet: device
   resources and shader translation are the remaining work. With the kit's
-  vtable pop counts corrected the game now runs without crashing at all.
+  vtable pop counts corrected the game now runs without crashing at all, and
+  it draws: seven DrawPrimitiveUP calls inside seven effect passes, with
+  every guest call resolved. Nothing is rasterized yet.
 - Re-pin the kit to `main` 4574a35, the commit the other game repositories
   pin; `game.toml` gains the `entry_points` key and CI takes the current
   three-platform shape. On this kit the translator clears discovery and
