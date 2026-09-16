@@ -24,25 +24,28 @@ references; the page of zero padding before it, after `.rsrc` ends at
 
 ## Import surface
 
-300 imports across 14 DLLs. Buckets follow the kit design's
-implemented / auto-stub / unsupported split, judged against the kit's
-shims as of its `game-dir-wip` snapshot.
+300 imports across 14 DLLs. Measured against the shims registered in kit
+`main` at 4574a35 (2026-09-14): 163 of 300 have a shim. Buckets follow the
+kit design's implemented / auto-stub / unsupported split.
 
-| DLL | Imports | Bucket | Notes |
+| DLL | Shimmed | Bucket | What is missing |
 | --- | --- | --- | --- |
-| `KERNEL32` | 157 | implemented, partly | files, heap, threads, `GetTickCount`, `Sleep`, toolhelp snapshots, affinity, `IsDebuggerPresent`, `GlobalMemoryStatusEx`, drive enumeration. Each import the kit's `kernel32.cpp` lacks is a run-report item, not a design problem. |
-| `USER32` | 41 | implemented, partly | one window, message pump, `SendInput`, `ToUnicode`, `GetKeyboardLayout`, `MessageBoxA` |
-| `GDI32` | 12 | auto-stub | `CreateFontA`, `ExtTextOutA`, `BitBlt`, `GetPixel`: font rendering into a bitmap, likely the debug text path |
-| `ADVAPI32` | 6 | implemented | registry: settings, CD key, language (the widescreen fix's `WriteSettingsToFile` shows what the game keeps there) |
-| `SHFOLDER`, `SHELL32` | 1, 1 | implemented | `SHGetFolderPathA` for the profile directory, `ShellExecuteA` |
-| `d3d9` | 1 | **unsupported** | `Direct3DCreate9` |
-| `d3dx9_26` | 13 | **unsupported** | `D3DXCreateEffectFromResourceA`, `D3DXCreateEffectPool` and eleven matrix/vector helpers |
-| `DINPUT8` | 1 | unsupported today | `DirectInput8Create`; the kit shims the DirectInput the Populous era used |
-| `DSOUND` | 2 | partly | ordinal 1 `DirectSoundCreate` (kit shim exists) and ordinal 6 `DirectSoundCaptureCreate` (voice chat; stub) |
-| `WINMM` | 24 | unsupported today | `waveOut*` and `waveIn*` streaming, `timeGetTime`, `timeBeginPeriod`; the kit design schedules winmm for M3 |
-| `WS2_32` | 31 | auto-stub, fail cleanly | online play |
-| `TAPI32` | 9 | auto-stub, fail cleanly | modem play |
-| `NETAPI32` | 1 | auto-stub | `Netbios` |
+| `KERNEL32` | 115 / 157 | implemented, partly | toolhelp snapshots, priority and affinity, `IsDebuggerPresent`, `GlobalMemoryStatusEx`, file-time conversion, the serial `*Comm*` family, `CreateProcessA`, waitable timers, `QueueUserAPC`, `VirtualProtect`, `VirtualQuery`, `SleepEx`, `DuplicateHandle`, `TerminateThread`, date and time formatting |
+| `USER32` | 30 / 41 | implemented, partly | `SetCapture`, `ReleaseCapture`, `RegisterClassExA`, `AdjustWindowRect`, `GetDesktopWindow`, `MapVirtualKeyA`, `MapVirtualKeyExA`, `ToUnicode`, `SendInput`, `PostThreadMessageA`, `wsprintfA` |
+| `GDI32` | 8 / 12 | auto-stub | `CreateFontA`, `ExtTextOutA`, `CreateBitmap`, `GetPixel`: text rendered into a bitmap, likely the debug text path |
+| `ADVAPI32` | 5 / 6 | implemented | `RegCreateKeyA`; the game keeps settings, CD key and language in the registry |
+| `SHELL32`, `SHFOLDER` | 1 / 1, 0 / 1 | implemented, auto-stub | `SHGetFolderPathA` for the profile directory |
+| `d3d9` | 0 / 1 | **unsupported** | `Direct3DCreate9` |
+| `d3dx9_26` | 0 / 13 | **unsupported** | `D3DXCreateEffectFromResourceA`, `D3DXCreateEffectPool` and eleven matrix and vector helpers |
+| `DINPUT8` | 0 / 1 | unsupported today | `DirectInput8Create`; the kit shims the `DINPUT.dll` generation |
+| `DSOUND` | 1 / 2 | partly | ordinal 6 `DirectSoundCaptureCreate` (voice chat) needs a stub |
+| `WINMM` | 3 / 24 | unsupported today | the kit has the timer family; every `waveOut*` and `waveIn*` streaming call is missing |
+| `WS2_32` | 0 / 31 | auto-stub, fail cleanly | online play; the kit shims `WSOCK32.dll`, not `WS2_32.dll` |
+| `TAPI32` | 0 / 9 | auto-stub, fail cleanly | modem play |
+| `NETAPI32` | 0 / 1 | auto-stub | `Netbios` |
+
+The loader has no auto-stub generator yet (kit milestone M2): an import
+with no shim is what the first boot's run report will list.
 
 ## Graphics: the blocking item
 
@@ -128,6 +131,60 @@ see the section below once a run has been recorded.
 ### Run log
 
 Recorded runs of the pipeline against this executable, newest first.
+
+#### 2026-09-16: kit main 4574a35 clears discovery; 40 functions need MMX, SSE2 and four rarer ops
+
+Re-pinned the kit from the `game-dir-wip` snapshot to `main` at 4574a35
+(2026-09-14), the commit the majesty, pharaoh and siege repositories pin.
+Since the snapshot the kit landed the translator's non-returning calls,
+`--allow-table-gaps` through `tools/build.py`, `[translate] entry_points`,
+`[game] heap_base`, winmm timers, gdi32, advapi32, version, wsock32, Miles,
+Bink through FFmpeg, DirectShow, and Android, Linux and Windows packaging.
+The config test passes on the new schema; the import table above is
+measured against this commit (163 of 300 imports shimmed).
+
+`tools/build.py --regenerate --target gen --allow-table-gaps "..."` on the
+same listings: the non-returning-call rule removes every fall-through
+target of the previous run. Discovery now completes, the translator parses
+all 25,768 functions and emits code for all but 40. Those 40 fail at the
+instruction level, and the 73 literal dispatch targets the final gate still
+reports are, with one exception, direct calls into them (`0x007c45f0`, the
+`STMXCSR` routine, is called from 19 sites; `0x006e9020`, the `FLDLN2`
+routine, from two). The exception is `fn_00666590` jumping to `0x00666583`,
+an address one byte inside the listing's previous instruction.
+
+| Instructions the translator lacks | Functions | Notes |
+| --- | --- | --- |
+| MMX: `MOVQ`, `PXOR`, `MOVD`, `EMMS` on `MM0`-`MM7` | 30 | a block of blitters and converters around `0x00811000`-`0x00818000`, one `EMMS` at `0x007f9fc2` |
+| SSE2: `MOVAPD`, `MOVLPD`, `PXOR` on `XMM` | 3 | the CRT's floating-point helpers at `0x007ce670`, `0x007ce719`, `0x008128fe` |
+| `STMXCSR` | 3 | the CRT's floating-point control routines, `0x007c45f0` among them |
+| x87 constants `FLDL2E`, `FLDLN2` | 2 | `exp` and `log` helpers |
+| `FNSTENV`, `LAHF` | 2 | CRT floating-point exception and flag inspection |
+
+So the translator gap for this game is small and bounded: an `MM` register
+file with the four MMX moves and `PXOR`, `XMM` operands for two moves and
+`PXOR`, `STMXCSR` (store the default control word), two x87 constant loads,
+and `FNSTENV` and `LAHF`. No unmodelled mnemonic appears outside those
+forty functions. The 20 undecoded jump-table sites are accepted for now
+through `--allow-table-gaps`; their switch shapes still need the decoder.
+The compile of the emitted code has not run yet, because the gate stops
+the build before it stages `build/recomp/gen`.
+
+Order of work from here, all of it in the kit:
+
+1. Translator: the MMX and SSE2 forms above, `STMXCSR`, the two x87
+   constants, `FNSTENV`, `LAHF`; then the MSVC 7.1 jump-table shapes at the
+   20 accepted sites. Then compile the translation and size it.
+2. Shims the boot path needs: `DirectInput8Create`, `SHGetFolderPathA`,
+   `RegCreateKeyA`, the missing user32 window-class and capture calls, then
+   the run report for the rest of kernel32; `WS2_32`, `TAPI32`, `NETAPI32`
+   and DirectSound capture as clean failures.
+3. winmm `waveOut` streaming over the kit's mixer.
+4. Direct3D 9 and the D3DX effect shim, the Metal ports of the 31 effects.
+   The kit's `siege-delphi` branch (2026-09-15) starts DXGI, Direct3D 11
+   and `D3DCompile` shims for a shader-model game; that is the nearest
+   prior art in the kit for this layer.
+5. Only then the hooks: replace the sentinels in `game.toml`.
 
 #### 2026-09-13: listings exported, translation stops at discovery
 

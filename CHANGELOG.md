@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Re-pin the kit to `main` 4574a35, the commit the other game repositories
+  pin; `game.toml` gains the `entry_points` key and CI takes the current
+  three-platform shape. On this kit the translator clears discovery and
+  emits code for all but 40 of the 25,768 functions; the 40 need MMX, SSE2,
+  `STMXCSR`, two x87 constants, `FNSTENV` and `LAHF` in the kit's
+  translator. Recorded in `docs/analysis.md`.
 - New game repository for Need for Speed: Most Wanted (PC Black Edition,
   `speed.exe` SHA-256 `80774c2e…d253c`) in the shape of populous-recomp: the
   kit as the submodule `kit/`, `game.toml` and `globals.toml`, thin

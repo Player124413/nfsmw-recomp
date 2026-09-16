@@ -25,8 +25,9 @@ dependency credits.
 
 The executable is pinned, hashed and measured against the kit; the config
 renders and its tests pass; the kit configures against it; Ghidra exports
-25,768 functions and the kit's translator parses every one, then stops at
-its discovery gates before emitting code. Nothing runs yet. [docs/analysis.md](docs/analysis.md) records the executable's import
+25,768 functions and the kit's translator emits code for all but 40 of
+them, which use MMX, SSE2 and four rarer instructions the kit does not
+model yet. Nothing runs yet. [docs/analysis.md](docs/analysis.md) records the executable's import
 surface, its graphics path and the kit work each needs. The short version:
 
 - Most Wanted renders through **Direct3D 9 with D3DX effect shaders**
@@ -54,7 +55,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r kit/requirements-dev.txt
 .venv/bin/python tools/setup.py --install "/path/to/Need For Speed Most Wanted Black Edition" --link-only
 .venv/bin/python tools/analyze.py --ghidra-home /path/to/ghidra_12.1.3_PUBLIC
-.venv/bin/python tools/build.py --regenerate
+.venv/bin/python tools/build.py --regenerate --allow-table-gaps "MSVC 7.1 switch shapes; see docs/analysis.md"
 ```
 
 `tools/setup.py`, `tools/build.py`, `tools/test.py` and `tools/ios_logs.py`

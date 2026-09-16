@@ -29,6 +29,8 @@ globals = "globals.toml"
 # has been audited. Sentinel, and no reads are rewritten.
 animation_counter = 0x00a37f00
 volatile_reads = []
+# Function entries the Ghidra listing lacks; none needed so far.
+entry_points = []
 
 [hooks]
 # runtime/kernel32.cpp native_frame_clock: GetTickCount return addresses of
