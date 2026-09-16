@@ -36,7 +36,13 @@ volatile_reads = []
 # that rule is not the answer: 8,344 dwords in this image point into .text at
 # 4-byte alignment and decode, nearly all of them noise. The two real entries
 # are named here instead.
-entry_points = [0x007f10e8, 0x007f11e3]
+#
+# 007f008e and 00825957 came from running the game: a vtable slot call
+# (007ee9fe `call dword ptr [edi + 0x14]`) and a function-pointer call
+# (00823380 `call dword ptr [eax]`) each named a .text address the runtime
+# had no block for, and reported it as a call to an unknown target. Both are
+# real code; neither is 16-byte aligned.
+entry_points = [0x007f10e8, 0x007f11e3, 0x007f008e, 0x00825957]
 
 [hooks]
 # runtime/kernel32.cpp native_frame_clock: GetTickCount return addresses of
