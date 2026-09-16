@@ -186,6 +186,19 @@ the only thing between the game and a frame. Everything before it works:
 the loader, the CRT, the file system, the registry, the window, and the
 game's own start-up code up to the point where it asks for a device.
 
+**Two more runs the same day.** Declaring stdcall pop counts removed every
+stack-drift warning (run 4: zero, against eleven in run 3), and the game got
+as far as asking for its window. `RegisterClassExA` had no implementation, so
+`CreateWindowExA` found no class and failed silently, and the game carried on
+with no window at all; the kit now registers the Ex structure, and run 5
+creates the window cleanly. Both runs then end the same way: `Direct3DCreate9`
+returns zero, the game calls a method on the interface it did not get, and
+what follows is garbage (`call to unknown target 7972656c` is four bytes of a
+string read as a function pointer). The last abort is an indirect jump to zero
+at `007e7d76`.
+
+Nothing is left between the game and a frame except Direct3D 9 itself.
+
 **Native suites** (`tools/test.py --native`): 13 of 15 pass. `runtime_tests`
 and `host_tests` fail on expectations written for Populous (its entry point,
 IAT slot count, `weanetr` data imports, `data\VCONFIG0.*`, its frame-clock
