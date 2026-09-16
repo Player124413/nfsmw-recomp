@@ -42,7 +42,331 @@ volatile_reads = []
 # (00823380 `call dword ptr [eax]`) each named a .text address the runtime
 # had no block for, and reported it as a call to an unknown target. Both are
 # real code; neither is 16-byte aligned.
-entry_points = [0x007f10e8, 0x007f11e3, 0x007f008e, 0x00825957]
+# The four above, plus pointer-referenced helpers found by scanning the image
+# (2026-09-17, docs/analysis.md).
+entry_points = [
+    0x00808f3e,  # table-referenced codec routine
+    0x0080a1e5,  # table-referenced codec routine
+    0x0080b6be,  # table-referenced codec routine
+    0x0080c664,  # table-referenced codec routine
+    0x0080f460,  # table-referenced codec routine
+    0x0080f536,  # table-referenced codec routine
+    0x0080f6e2,  # table-referenced codec routine
+    0x00810107,  # table-referenced codec routine
+    0x00810b38,  # table-referenced codec routine
+    0x0081189a,  # table-referenced codec routine
+    0x0081271f,  # table-referenced codec routine
+    0x008129f2,  # table-referenced codec routine
+    0x00812c5f,  # table-referenced codec routine
+    0x00812dbf,  # table-referenced codec routine
+    0x0081312d,  # table-referenced codec routine
+    0x00813b0f,  # table-referenced codec routine
+    0x00813f59,  # table-referenced codec routine
+    0x00814256,  # table-referenced codec routine
+    0x008148f7,  # table-referenced codec routine
+    0x0081523d,  # table-referenced codec routine
+    0x0081594e,  # table-referenced codec routine
+    0x0081681d,  # table-referenced codec routine
+    0x0081aa84,  # table-referenced codec routine
+    0x0081ab18,  # table-referenced codec routine
+    0x0081bce6,  # table-referenced codec routine
+    0x0081c199,  # table-referenced codec routine
+    0x0081c1b9,  # table-referenced codec routine
+    0x0081c7b4,  # table-referenced codec routine
+    0x0081c90d,  # table-referenced codec routine
+    0x0081d738,  # table-referenced codec routine
+    0x0081d73d,  # table-referenced codec routine
+    0x0081d77b,  # table-referenced codec routine
+    0x0081d780,  # table-referenced codec routine
+    0x0081f98a,  # table-referenced codec routine
+    0x00820bd7,  # table-referenced codec routine
+    0x00822356,  # table-referenced codec routine
+    0x00822b36,  # table-referenced codec routine
+    0x00822b3b,  # table-referenced codec routine
+    0x00823681,  # table-referenced codec routine
+    0x00823763,  # table-referenced codec routine
+    0x00824786,  # table-referenced codec routine
+    0x0082484b,  # table-referenced codec routine
+    0x008258ab,  # table-referenced codec routine
+    0x00826873,  # table-referenced codec routine
+    0x00826914,  # table-referenced codec routine
+    0x00826b3c,  # table-referenced codec routine
+    0x00826bbd,  # table-referenced codec routine
+    0x00826c15,  # table-referenced codec routine
+    0x00826ded,  # table-referenced codec routine
+    0x00827002,  # table-referenced codec routine
+    0x0082700a,  # table-referenced codec routine
+    0x00827107,  # table-referenced codec routine
+    0x0082710f,  # table-referenced codec routine
+    0x008272ff,  # table-referenced codec routine
+    0x008273c4,  # table-referenced codec routine
+    0x00828ce9,  # table-referenced codec routine
+    0x0082b9b0,  # table-referenced codec routine
+    0x0082bb80,  # table-referenced codec routine
+    0x0082e7e0,  # table-referenced codec routine
+    0x00835d80,  # table-referenced codec routine
+    0x00835e00,  # table-referenced codec routine
+    0x00836be0,  # table-referenced codec routine
+    0x0083cfb0,  # table-referenced codec routine
+    0x0083d1c0,  # table-referenced codec routine
+    0x0083d3d0,  # table-referenced codec routine
+    0x0083d780,  # table-referenced codec routine
+    0x0083e120,  # table-referenced codec routine
+    0x0083f3a0,  # table-referenced codec routine
+    0x0081603f,
+  0x00410881,
+  0x00454449,
+  0x0046415a,
+  0x00485041,
+  0x00490045,
+  0x00504c45,
+  0x00530053,
+  0x00535245,
+  0x00540054,
+  0x0073752d,
+  0x007c4201,
+  0x007c904f,
+  0x007ccea6,
+  0x007ccf26,
+  0x007ce2a2,
+  0x007ce2cd,
+  0x007ce2f7,
+  0x007ce336,
+  0x007ce6be,
+  0x007cf3a1,
+  0x007cfd35,
+  0x007cff7a,
+  0x007d03ad,
+  0x007d0439,
+  0x007d0929,
+  0x007d09a6,
+  0x007d0a6f,
+  0x007d0afb,
+  0x007d4221,
+  0x007d43d2,
+  0x007d6d08,
+  0x007d8852,
+  0x007d8dea,
+  0x007d8df5,
+  0x007d8e06,
+  0x007d8e0c,
+  0x007d8e12,
+  0x007d8e2e,
+  0x007d8e49,
+  0x007d8e6a,
+  0x007d8e7a,
+  0x007d8e8e,
+  0x007d8e9e,
+  0x007d8ebe,
+  0x007d8edd,
+  0x007d8f02,
+  0x007d8f16,
+  0x007d8f2e,
+  0x007d8f42,
+  0x007d8f62,
+  0x007d8f81,
+  0x007d8fa6,
+  0x007d8fba,
+  0x007d8fd2,
+  0x007d8fe6,
+  0x007d9006,
+  0x007d9025,
+  0x007d904a,
+  0x007d905e,
+  0x007d9076,
+  0x007d908a,
+  0x007d90aa,
+  0x007d90c9,
+  0x007d90ee,
+  0x007d9102,
+  0x007d911a,
+  0x007d912e,
+  0x007d914e,
+  0x007d916d,
+  0x007d9192,
+  0x007d91a6,
+  0x007d91be,
+  0x007d91d2,
+  0x007d91f2,
+  0x007d9211,
+  0x007d9236,
+  0x007d924a,
+  0x007d9262,
+  0x007dad0d,
+  0x007db1ed,
+  0x007db2b9,
+  0x007ddcec,
+  0x007e0708,
+  0x007e2738,
+  0x007e3908,
+  0x007e3d51,
+  0x007e719b,
+  0x007e737d,
+  0x007ee2e4,
+  0x007ee2ea,
+  0x007ee2ed,
+  0x007ee2f2,
+  0x007ee2f9,
+  0x007ee7f2,
+  0x007ee8d8,
+  0x007ee8df,
+  0x007ee8e2,
+  0x007ee962,
+  0x007eea93,
+  0x007eec49,
+  0x007eec9e,
+  0x007eecb4,
+  0x007f008e,
+  0x007f10e8,
+  0x007f11e3,
+  0x007f18c4,
+  0x007f18c7,
+  0x007f18ca,
+  0x007f18cb,
+  0x007f18ce,
+  0x007f18d1,
+  0x007f18d4,
+  0x007f1be2,
+  0x007f1be9,
+  0x007f1d2f,
+  0x007f1d36,
+  0x007f1d98,
+  0x007f20a9,
+  0x007f20b5,
+  0x007f20b8,
+  0x007f2b4b,
+  0x007f2c0b,
+  0x007f3203,
+  0x007f323b,
+  0x007f323e,
+  0x007f34ca,
+  0x007f34db,
+  0x007f34dc,
+  0x007f3502,
+  0x007f3599,
+  0x007f359c,
+  0x007f35d5,
+  0x007f35d6,
+  0x007f35d7,
+  0x007f35da,
+  0x007f35dd,
+  0x007f7201,
+  0x007f7653,
+  0x007f76c3,
+  0x007f76c6,
+  0x007f76c9,
+  0x007f76cc,
+  0x007f76cf,
+  0x007f76d2,
+  0x007f76d5,
+  0x007f76d8,
+  0x007f76db,
+  0x007f76de,
+  0x007f76e1,
+  0x007f76e4,
+  0x007f76e7,
+  0x007f76ea,
+  0x007f76ed,
+  0x007f76f3,
+  0x007f76f6,
+  0x007f76f9,
+  0x007f7719,
+  0x007f771c,
+  0x007f771f,
+  0x007f7722,
+  0x007f7727,
+  0x007f9d7e,
+  0x007f9d82,
+  0x007fa44d,
+  0x007fa451,
+  0x007fefff,
+  0x008167d4,
+  0x0081680e,
+  0x008196c2,
+  0x008196ce,
+  0x008196d6,
+  0x008196de,
+  0x008199d1,
+  0x00819b13,
+  0x00819b49,
+  0x00819bbe,
+  0x00819e57,
+  0x00819e71,
+  0x00819e9f,
+  0x00819ec5,
+  0x00819ed5,
+  0x00819efb,
+  0x00819f57,
+  0x00819f73,
+  0x00819f7d,
+  0x00819f87,
+  0x00819f92,
+  0x00819fa6,
+  0x00819fbc,
+  0x00819ff6,
+  0x0081a0ac,
+  0x0081a0d3,
+  0x0081a166,
+  0x0081a18a,
+  0x0081a218,
+  0x0081a238,
+  0x0081a259,
+  0x0081a27a,
+  0x0081a288,
+  0x0081a2ab,
+  0x0081a2cd,
+  0x0081a2ed,
+  0x0081a30d,
+  0x0081a32f,
+  0x0081a394,
+  0x0081a3a2,
+  0x0081a52c,
+  0x0081a7cd,
+  0x0081a7e0,
+  0x0081a7f4,
+  0x0081a801,
+  0x0081a80f,
+  0x0081a81b,
+  0x0081a841,
+  0x0081a86b,
+  0x00825957,
+  0x00831549,
+  0x0083155d,
+  0x008315d2,
+  0x0085d7c3,
+  0x0085e2d5,
+  0x00867315,
+  0x0088dad6,
+  0x0088dafb,
+  0x0088db11,
+  0x0088db36,
+  0x0088db5b,
+  0x0088dba5,
+  0x0088dbca,
+  0x0088dbef,
+  0x0088dc14,
+  0x0088dc39,
+  0x0088dc5e,
+  0x0088dc83,
+  0x0088dca8,
+  0x0088dccd,
+  0x0088dcf2,
+  0x0088dd17,
+  0x0088dd3c,
+  0x0088dd61,
+  0x0088dd86,
+  0x0088ddab,
+  0x0088ddf5,
+  0x0088de1a,
+  0x0088de3f,
+  0x0088de64,
+  0x0088de89,
+  0x0088deae,
+  0x0088ded3,
+  0x0088dedf,
+  0x0088deeb,
+  0x0088def6,
+]
 
 [hooks]
 # runtime/kernel32.cpp native_frame_clock: GetTickCount return addresses of

@@ -667,3 +667,44 @@ Order of work from here, all of it in the kit:
 3. Direct3D 9 and the D3DX effect shim, the Metal ports of the 31 effects.
 4. Only then the hooks: replace the sentinels in `game.toml` with the frame
    clock, input device and camera addresses the listings name.
+
+## Run log: from a black window to a race (kit be8209f)
+
+Each step below was a separate reason the window stayed black or the game
+stopped.
+
+- **MMX.** The video codec (`0x80xxxx`-`0x83xxxx`) uses MMX without asking
+  CPUID. The kit now translates MMX; SSE stays a trap.
+- **Codec routines.** 68 routines reached only through tables (the dispatch
+  table `0x80673d` fills, and the one at `0x801994`) are now entry points in
+  `game.toml`.
+- **Technique annotations.** The game reads each technique's `shader`
+  annotation (`0x006d5c10`). With none, it concludes the fixed-function
+  technique is in use and sets device transforms, never `WorldViewProj`, so
+  every front-end quad landed at w = 0. Implementing annotations gave the
+  first lit frames: the intro movies and the title screen.
+- **Preshaders.** Every render state in these effects (`AlphaBlendEnable =
+  BlendState[0]`) is a preshader, a copy from a parameter to the output. The
+  kit now evaluates them and applies pass states, which fixed the title's
+  blending.
+- **Never-returning calls.** Ghidra ends a C++ catch funclet's listing on the
+  call before its rethrow, so the node allocator's `0x005d1120` was taken as
+  never returning, and its return during the race load ended in `R6025 pure
+  virtual function call`. A callee whose listing returns is now trusted,
+  unless it calls `RaiseException`-like imports or padding follows the call.
+- **Shader opcodes.** RSQ is 7 in the kit's shader interpreter (6 is RCP), so
+  world shaders no longer fail to load.
+
+`smoke/title-to-menu.script` and `smoke/quick-race.script` drive the headless
+host (`build/recomp/pop_smoke`) from boot through the menus into a Quick Play
+sprint. The run reaches the race: the car, road, rain and lights draw, the
+HUD's timer and speedometer respond, and holding Up accelerates.
+
+Open problems:
+
+- Audio banks (`SOUND/*.abk`) carry x86 code the game relocates into the heap
+  and calls (`0x0081f9aa`). The kit has no way to run code outside the image,
+  so those calls return 0.
+- The CPU rasterizer is slow in the race, and the long script can hit the
+  watchdog. Depth, glare and the in-race HUD still look wrong.
+- `GetLastActivePopup` is missing; only the CRT's error path asks for it.
