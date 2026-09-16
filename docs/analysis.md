@@ -132,6 +132,72 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16: the translation compiles and the game boots to the Direct3D 9 wall
+
+Kit work on branch `nfsmw` of recomp-kit, cut from `main` 4574a35.
+
+**Translator.** Seven gaps closed, and the whole executable now translates:
+
+| Change | Why |
+| --- | --- |
+| MMX, SSE and SSE2 become a `recomp_unmodelled` trap | `recomp_cpuid` advertises none of them, so a guest that checks CPUID never runs one; the 30 MMX blitters and the CRT's SSE2 math are dead code behind `__sse2_available` at `0x009c5310` |
+| the trap is tested before the string instructions | `MOVSD` and `CMPSD` name both a string instruction and an SSE2 scalar-double one, and only the operands tell them apart; the string emitter was silently claiming the SSE2 form |
+| `XADD` and `CMPXCHG` | lock-prefixed atomics in the CRT's reference counting |
+| `LAHF` | one CRT flag inspection |
+| `FLDLN2`, `FLDL2E`, `FLDLG2`, `FLDL2T` | the x87 constant loads `exp` and `log` use |
+| `FNSTENV` and `FLDENV` | the 28-byte x87 environment, masking exceptions as hardware does |
+| `INT3` ends a block | MSVC pads between functions with it; a listing whose tail is a call Ghidra marks non-returning ran that padding into the next function |
+
+The Unicorn differential in the kit earned its place immediately: it caught
+`FLDL2E` written as log10(e) instead of log2(e).
+
+All 25,768 functions now translate. The archive is 221 MB from 188 chunks,
+and `build/SpeedRecomp.app` links.
+
+**Entry points.** `007f0e13` jumps through a `.data` slot holding `007f10e8`,
+a CRT helper Ghidra never listed. The translator's pointer scan only accepts
+16-byte-aligned destinations and these are not, so `game.toml` names them in
+`[translate] entry_points`. Relaxing the alignment rule instead would be
+wrong: 8,344 dwords in this image point into `.text` at 4-byte alignment and
+decode as instructions, nearly all of them coincidence.
+
+**Runtime.** `GetModuleHandleA` now hands out a handle for a DLL the runtime
+serves, instead of reporting it missing. The CRT's `__mtinit` asks for
+kernel32, and a null handle made it skip the block that fills in its own TLS
+function pointers, leaving it to call one that was still zero. Nineteen
+kernel32 shims were added (system and file times, process id, handle
+duplication, `SleepEx`, waitable timers, priority and affinity, toolhelp
+reporting no processes, `IsDebuggerPresent`). Unshimmed imports across
+`d3d9`, `d3dx9_26`, `DINPUT8`, `SHFOLDER`, `WINMM` wave, `WS2_32`,
+`NETAPI32`, `USER32` and `GDI32` now declare their stdcall pop counts, so a
+call the runtime answers with zero still leaves the guest stack where the
+callee would have.
+
+**Boot progression**, each line a run of the built app:
+
+| Run | How far | Stopped at |
+| --- | --- | --- |
+| 1 | CRT entry | `__mtinit` calling a null `FlsAlloc` pointer |
+| 2 | CRT complete, into the game's own start-up | the indirect jump to the unlisted CRT helper `007f10e8` |
+| 3 | window class, window, `Direct3DCreate9`, `D3DXCreateEffectPool`, `D3DXCreateEffectFromResourceA` | `006c1527`, `call dword ptr [ecx + 0x38]`: a COM method on the `IDirect3D9` that `Direct3DCreate9` could not return |
+
+That last line is the wall this port was always going to hit, and it is now
+the only thing between the game and a frame. Everything before it works:
+the loader, the CRT, the file system, the registry, the window, and the
+game's own start-up code up to the point where it asks for a device.
+
+**Native suites** (`tools/test.py --native`): 13 of 15 pass. `runtime_tests`
+and `host_tests` fail on expectations written for Populous (its entry point,
+IAT slot count, `weanetr` data imports, `data\VCONFIG0.*`, its frame-clock
+addresses) and on the DirectInput mouse clamp, which cannot work while
+`mouse_vtable` is a sentinel. The checks added for the module-handle change
+pass, and Populous's own binary still reports 433 checks and 0 failures.
+
+**Next**, in order: `IDirect3D9` and `IDirect3DDevice9`, the D3DX effect
+runtime, and Metal translations of the 31 compiled effects; then
+`DirectInput8Create`; then `waveOut` streaming. The graphics layer is the
+bulk of the remaining work and is unchanged in size by today.
+
 #### 2026-09-16: kit main 4574a35 clears discovery; 40 functions need MMX, SSE2 and four rarer ops
 
 Re-pinned the kit from the `game-dir-wip` snapshot to `main` at 4574a35

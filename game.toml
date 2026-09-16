@@ -29,8 +29,14 @@ globals = "globals.toml"
 # has been audited. Sentinel, and no reads are rewritten.
 animation_counter = 0x00a37f00
 volatile_reads = []
-# Function entries the Ghidra listing lacks; none needed so far.
-entry_points = []
+# Function entries the Ghidra listing lacks. The CRT stores pointers to its
+# own helpers in .data and jumps through them (007f0e13 jumps through the slot
+# at 00907fac); Ghidra lists neither target, and the translator's pointer scan
+# only accepts a 16-byte-aligned destination, which these are not. Relaxing
+# that rule is not the answer: 8,344 dwords in this image point into .text at
+# 4-byte alignment and decode, nearly all of them noise. The two real entries
+# are named here instead.
+entry_points = [0x007f10e8, 0x007f11e3]
 
 [hooks]
 # runtime/kernel32.cpp native_frame_clock: GetTickCount return addresses of

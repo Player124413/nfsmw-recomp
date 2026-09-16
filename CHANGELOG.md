@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The translation compiles and the game boots as far as its first Direct3D 9
+  call. `game.toml` names two CRT helper entry points the Ghidra listing
+  lacks; everything else was kit work (see the kit's changelog): MMX/SSE2
+  traps, `XADD`, `CMPXCHG`, `LAHF`, the x87 constants and environment ops,
+  `INT3` as a block terminator, `GetModuleHandleA` for served modules, 19
+  kernel32 shims and stdcall pop counts for the unshimmed imports. Recorded
+  in `docs/analysis.md`.
 - Re-pin the kit to `main` 4574a35, the commit the other game repositories
   pin; `game.toml` gains the `entry_points` key and CI takes the current
   three-platform shape. On this kit the translator clears discovery and
