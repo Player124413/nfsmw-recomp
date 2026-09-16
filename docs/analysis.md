@@ -132,6 +132,39 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16: what the game actually asks for, counted
+
+A verbose run (`RECOMP_LOG=2`) for forty seconds, with no crash in it, made
+148 distinct guest API calls. The graphics half of that census is the clearest
+statement of where this port is:
+
+| Call | Times | What it says |
+| --- | --- | --- |
+| `D3DXCreateEffectFromResourceA` | 62 | it loads every effect it has |
+| `ID3DXEffect::GetDesc` | 93 | and inspects each one |
+| `SetTechnique`, `ValidateTechnique`, `OnLostDevice`, `Release` | 31 each | it picks a technique per effect, then discards half of them |
+| `CreateVertexDeclaration` | 33 | it describes 33 vertex layouts |
+| `CreateTexture` | 13 | and starts filling textures |
+| `IDirect3DTexture9::LockRect` / `UnlockRect` | 2 / 1 | uploading image data |
+| `CreateDepthStencilSurface` | 8 | shadow and depth targets |
+| `SetRenderTarget`, `SetDepthStencilSurface` | 6 each | it is switching render passes |
+| `Clear` | 7 | clearing them |
+| `BeginScene`, `EndScene`, `Present` | 1 each | one frame boundary reached |
+| `CreateCubeTexture` | 2 | the shadow cube |
+| `GetCubeMapSurface`, then `Release` | 1, 1 | it asked for a face, got nothing, and threw the cube away |
+
+That last row was the remaining defect, and it is the same mistake as the
+effect descriptors: a method that returns success without writing what the
+caller asked for. `GetCubeMapSurface` is now real, each face a surface of its
+own kept on the texture. `GetLevelCount` was worse than a stub - it returns a
+count rather than an HRESULT, so returning `D3D_OK` told the game its textures
+had no levels at all; it now returns 1. `GetLevelDesc` fills its structure.
+
+No `DrawPrimitive` has been reached. The game is still setting up: it is
+loading effects, describing vertex formats, allocating targets and clearing
+them. A draw call is the next milestone, and pixels need the whole Metal path
+behind it, which does not exist yet.
+
 #### 2026-09-16: four pop counts, and a run with no crash in it
 
 Run 11 died at `EIP=0` immediately after `IDirect3DDevice9::CreateTexture`.
