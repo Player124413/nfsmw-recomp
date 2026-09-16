@@ -132,6 +132,37 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-16: nothing unresolved
+
+`IDirect3DTexture9::LockRect` takes five dwords with `this` and the cube form
+six; both were declared one short. The game locks a texture, copies pixels in
+with `rep movsd`, and unlocks it by reloading the texture pointer from the
+stack - so the missing pop moved that slot and the unlock called through zero.
+
+The run after the correction is the cleanest of the bring-up:
+
+| | Run 18 | Run 19 |
+| --- | --- | --- |
+| calls into nothing | 1 | **0** |
+| `LockRect` / `UnlockRect` | 2 / 1 | 330 / 330 |
+| textures created | 13 | 145 |
+| `SetTexture` | 0 | 33 |
+| `SetVertexDeclaration` | 0 | 12 |
+| `Clear` | 7 | 14 |
+| frames presented | 1 | 2 |
+| draw calls | 0 | 0 |
+| log lines | 3,142 | 8,095 |
+
+Every guest call now reaches something that answers it. The game uploads its
+texture set, binds textures, describes vertex formats, clears its targets and
+presents frames. It has not issued a draw.
+
+Three of the last four defects were the same mistake in different places: a
+vtable slot declaring fewer arguments than it takes. The pop count is part of
+the interface, and getting it wrong corrupts the caller rather than the
+callee, which is why each one surfaced as a crash or a null call somewhere
+unrelated.
+
 #### 2026-09-16: six cube faces, and two runs that proved nothing
 
 The cube texture was still being thrown away after one face. The reason was
