@@ -132,6 +132,34 @@ see the section below once a run has been recorded.
 
 Recorded runs of the pipeline against this executable, newest first.
 
+#### 2026-09-17: the first presented frames, and why they are black
+
+The presenter now accepts 32-bit frames, and the Direct3D 9 device clears,
+copies and presents for real. Two frames reach the host and the frame dump
+writes both. Both are black, and the run says that is correct:
+
+```text
+clear 1:  flags 7 colour 00000000, the back buffer
+present:  back buffer, 0 of 3168 sampled pixels lit
+clear 2-7:  colour 00000000, off-screen targets of 640x480, 160x120 and 20x15
+clear 8-13: colour ff000000, six 16x16 targets
+StretchRect: back buffer -> off-screen 640x480
+draws 1-7:  seven screen-space quads
+present:  back buffer, 0 of 3168 sampled pixels lit
+```
+
+Every clear is black. The one copy goes from the back buffer to an off-screen
+target, which is a post-processing grab rather than a composition onto the
+screen. So the only thing in these frames that would put a non-black pixel on
+the back buffer is the seven quads, and nothing draws them yet.
+
+This closes the question of the presentation path: it works, and a black
+window is the honest output of the port as it stands. The first visible
+image now depends entirely on rasterizing those quads, which needs the
+vertex layouts decoded from the declarations, the bound textures sampled,
+and the effect's pixel stage reproduced closely enough to give the right
+colour.
+
 #### 2026-09-16: what the draws contain
 
 The draw entry points now report their arguments. Every draw in the opening
