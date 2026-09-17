@@ -521,7 +521,7 @@ required_dirs = ["CARS", "FRONTEND", "GLOBAL", "SOUND", "TRACKS"]
 
 [bundle]
 # Left out of the iOS bundle: the uninstaller, the manual, the Windows-only
-# ASI loader and widescreen fix, LAN server, installer helpers, the 856 MB of
-# VP6 cinematics no shim decodes yet, and the repack's saves.
-exclude = ["Uninstall", "Support", "scripts", "MOVIES", "SAVE", "foobar",
+# ASI loader and widescreen fix, LAN server, installer helpers and the
+# repack's saves. The VP6 cinematics stay: the game decodes them itself.
+exclude = ["Uninstall", "Support", "scripts", "SAVE", "foobar",
            "*.dll", "*_inst.exe", "*.txt", "server.cfg"]
