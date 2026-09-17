@@ -3,7 +3,7 @@
 #
 # Enter skips the intro movies and dismisses the title screen. The first run
 # asks whether to create an alias (a save profile); Enter takes the
-# highlighted answer and the name screen that follows. Each step is dumped so
+# highlighted answer, No, and the main menu follows. Each step is dumped so
 # the frames show where the game went.
 wait 20000
 dump intro
@@ -17,16 +17,6 @@ wait 200
 key RETURN up
 wait 8000
 dump alias-question
-key RETURN down
-wait 200
-key RETURN up
-wait 5000
-dump alias-name
-key RETURN down
-wait 200
-key RETURN up
-wait 8000
-dump after-name
 key RETURN down
 wait 200
 key RETURN up
