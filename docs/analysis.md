@@ -808,3 +808,24 @@ settings in core.nfsmw exist but stretch the 4:3 layout.
   Display setting instead of being undone on the next frame.
 - **F10.** The mod settings page registers its keys on Direct3D 9 presents,
   which carry no guest pixels.
+
+## Run log: the advanced video options
+
+- Full Screen Anti-Aliasing, Texture Filtering and Shadow Detail were greyed
+  out. The game decides from the adapter (`0x006c1510`, `0x006d2100`): shadow
+  maps only on NVIDIA (`0x10de`, a D24S8 texture) or ATI, filtering from
+  D3DCAPS9.TextureFilterCaps, anti-aliasing from
+  CheckDeviceMultiSampleType. The shim reported vendor 0, and its D3DCAPS9 had
+  the shader versions at the wrong offsets (172 and 180 instead of 196 and
+  204) with everything else zero.
+- The shim now describes a GeForce 7800 GTX (0x10de/0x0091) with the caps the
+  renderer implements. Texture Filtering and Shadow Detail are offered;
+  multisampling is reported unavailable, so anti-aliasing stays off (the
+  renderer supersamples by drawing at the window's size instead).
+- With vs/ps 3.0 reported, the glossy window effect picks its 3.0 technique,
+  so the translator now takes shader model 3: outputs and inputs named by
+  their dcl, defi/defb, rep/loop/if/ifc/break/breakc, texldl.
+- A shader's own `def` constants past the count the game set were dropped;
+  the constant buffer now covers every constant the program reads.
+- Shadow Detail at its highest roughly doubles the draw count (shadow-map
+  passes): a 720p race went from about 90 fps to about 45 fps headless.
