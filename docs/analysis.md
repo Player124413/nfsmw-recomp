@@ -829,3 +829,39 @@ settings in core.nfsmw exist but stretch the 4:3 layout.
   the constant buffer now covers every constant the program reads.
 - Shadow Detail at its highest roughly doubles the draw count (shadow-map
   passes): a 720p race went from about 90 fps to about 45 fps headless.
+
+## Run log: the iPad, Linux, Windows and the browser
+
+- **A black main menu on the iPad.** The app found no core mod: a stock
+  device loads no plugins, so `core.nfsmw` never ran and the front end drew
+  nothing. Core mods are compiled into the app now
+  (`cmake/BuiltinMods.cmake`), and the loader resolves a plugin by its stem
+  before it opens a file.
+- **Black 3D on Linux.** The developer run read its mods and state from the
+  Mac build directory beside the shared translation. A run now uses the
+  `recomp/` directory next to its own executable (`runtime/layout.cpp`).
+  Software rendering (lavapipe) also outran the smoke host's 180-second
+  limit, which `RECOMP_SMOKE_SECONDS` now raises.
+- **The Windows cross build.** Over llvm-mingw: `dx/d3d.cpp` was missing
+  `stdlib.h`, `os_win32.cpp` needed `RRF_SUBKEY_*` fallbacks for the older
+  headers, the capture fixture does not build on Win32, `dx_tests` reaches
+  `environ` through `__p__environ`, and `mods_tests` links pthread. The
+  executable runs the whole script at 100-170 fps under CrossOver.
+- **Magenta edges on Vulkan.** The half-pixel correction had the wrong sign,
+  so a full-target post-processing pass left its last column and row undrawn
+  and they sampled a colour-grading LUT with wrap. Both backends now move
+  geometry right and down, as Wine does.
+- **20 fps in the browser.** The browser's main thread owns WebGPU, and it
+  drained the Direct3D 9 queue once per animation frame; every call that
+  answers the game (a query result, a present) waited up to a display frame,
+  and the game thread sat in a futex 92% of the time. A hand-over now asks
+  the main thread to drain as soon as it is free: a race runs at 115-145 fps.
+- **A deadlock in the browser.** The drain was asked for with a proxied call,
+  and the main thread runs those wherever it is blocked - here inside the
+  WebGPU binding's event lock, waiting on the allocator to free a completed
+  event. The drain drew, which took the same lock again. The proxied call now
+  only schedules a timeout, which runs from the event loop once nothing of
+  ours is part-way through; WebGPU's own callbacks hand their work there too.
+- Reading a render target back is not supported in the browser, and the audio
+  sink's "starved" count is an artifact: SDL's Emscripten device drains the
+  queue on every pull, and no pull arrived late.
