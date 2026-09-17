@@ -51,9 +51,61 @@ operand_redirects = [
     { at = 0x006612ea, from = 0x008970f0, to = 0x00a37800 },  # FMUL: the real timestep
     { at = 0x0065c78d, from = 0x008970f0, to = 0x00a37800 },  # FLD: GetDebugRealTime
     { at = 0x0065c7d7, from = 0x008970f0, to = 0x00a37800 },  # FLD: GetDebugRealTime
+    # Widescreen field of view (core.nfsmw fills these per view).
+    { at = 0x006cf566, from = 0x0089096c, to = 0x00a37804 },  # FDIVR 1.0: horizontal scale
+    { at = 0x006cf578, from = 0x008933d4, to = 0x00a37808 },  # FMUL 0.5: vertical half-angle
+    { at = 0x006cf5dc, from = 0x0089096c, to = 0x00a3780c },  # FDIVR 1.0: vertical scale
+    { at = 0x006e46b0, from = 0x0089096c, to = 0x00a37818 },  # shadow camera, horizontal
+    { at = 0x006e4830, from = 0x0089096c, to = 0x00a37818 },  # shadow camera, horizontal
+    { at = 0x006c9653, from = 0x008910c4, to = 0x00a3781c },  # shadow distance multiplier
+]
+# What the widescreen fix patched in the code bytes. The slots they read are
+# seeded below and filled by core.nfsmw; see mods/core/nfsmw/nfsmw.c.
+instruction_patches = [
+    # Projection: the aspect term is a slot (1.0, or 0.4 for the mirror).
+    { at = 0x006cf4f0, text = "FLD float ptr [0x00a37810]" },
+    { at = 0x006cf4f3, text = "FDIV float ptr [0x00a37814]" },
+    { at = 0x006e4656, text = "FLD float ptr [0x00a37814]" },
+    { at = 0x006e4668, text = "NOP" },
+    { at = 0x006e47e4, text = "FLD float ptr [0x00a37814]" },
+    { at = 0x006e47ec, text = "NOP" },
+    # The game's own widescreen HUD layout, always on.
+    { at = 0x0057cb82, text = "CMP DL,0x1" },
+    { at = 0x005696cb, text = "MOV AL,0x1" },
+    { at = 0x0058d883, text = "MOV AL,0x1" },
+    { at = 0x0056885a, text = "CMP CL,0x1" },
+    # HUD origins: 320.0 becomes the HUD's centre, 0x00894b40.
+    { at = 0x0056fecd, text = "MOV dword ptr [ESP + 0x19c],dword ptr [0x00894b40]" },
+    { at = 0x00584eef, text = "MOV dword ptr [ESP + 0x90],dword ptr [0x00894b40]" },
+    { at = 0x00599e79, text = "MOV dword ptr [ESP + 0x84],dword ptr [0x00894b40]" },
+    { at = 0x0059a120, text = "MOV dword ptr [ESP + 0xc4],dword ptr [0x00894b40]" },
+    { at = 0x0059a5ab, text = "MOV dword ptr [ESP + 0x94],dword ptr [0x00894b40]" },
+    { at = 0x0059a83e, text = "MOV dword ptr [ESP + 0x94],dword ptr [0x00894b40]" },
+    { at = 0x005a44c8, text = "MOV dword ptr [ESP + 0x64],dword ptr [0x00894b40]" },
+    # Rear-view mirror position.
+    { at = 0x006e70bc, text = "MOV dword ptr [ESP + 0x70],dword ptr [0x00a37824]" },
+    { at = 0x006e70f8, text = "MOV dword ptr [ESP + 0xa0],dword ptr [0x00a37824]" },
+    { at = 0x006e70cc, text = "MOV dword ptr [ESP + 0x80],dword ptr [0x00a37828]" },
+    { at = 0x006e70e2, text = "MOV dword ptr [ESP + 0x90],dword ptr [0x00a37828]" },
+    # The widescreen splash, its "press Enter" string and the HD logo.
+    { at = 0x005a3080, text = "NOP" },
+    { at = 0x005a3141, text = "PUSH 0xc4df3ff2" },
+    { at = 0x005a30b1, text = "CALL 0x00514cc0" },
+    # Cinematics fill a 16:9 screen (cropped).
+    { at = 0x0059a029, text = "PUSH 0x3f2aaaab" },
+    { at = 0x0059a02e, text = "PUSH 0x3f2aaaab" },
+    { at = 0x0059a033, text = "PUSH 0xbf2aaaab" },
+    { at = 0x0059a038, text = "PUSH 0xbf2aaaab" },
+]
+data_seeds = [
+    { addr = 0x00a37810, float = 1.0 },
+    { addr = 0x00a37814, float = 1.0 },
+    { addr = 0x00a37824, float = 450.0 },
+    { addr = 0x00a37828, float = 190.0 },
 ]
 entry_points = [
-    0x006a8e70,  # a vtable method right after a switch's byte table; Ghidra read it as data
+    0x006a8870,  # the unlisted function 0x006a8e70 jumps to; it holds the switch at 0x006a8a14
+    0x006a8e70,  # a vtable thunk right after that switch's byte table; Ghidra read it as data
     0x0081a7a6,  # a vtable method in the codec region, missing from the listing
     0x00808f3e,  # table-referenced codec routine
     0x0080a1e5,  # table-referenced codec routine
