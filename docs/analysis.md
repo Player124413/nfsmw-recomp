@@ -703,8 +703,8 @@ HUD's timer and speedometer respond, and holding Up accelerates.
 Open problems:
 
 - Audio banks (`SOUND/*.abk`) carry x86 code the game relocates into the heap
-  and calls (`0x0081f9aa`). The kit has no way to run code outside the image,
-  so those calls return 0.
+  and calls (`0x0081f9aa`). The kit had no way to run code outside the image,
+  so those calls returned 0. (Fixed later: see the widescreen run log below.)
 - The CPU rasterizer is slow in the race, and the long script can hit the
   watchdog. Depth, glare and the in-race HUD still look wrong.
 - `GetLastActivePopup` is missing; only the CRT's error path asks for it.
@@ -729,3 +729,41 @@ Open problems:
 
 Open: true 16:9 needs the HUD and field-of-view fixes; the resolution
 settings in core.nfsmw exist but stretch the 4:3 layout.
+
+## Run log: widescreen, shadows, occlusion queries, bank code (kit 45219bf)
+
+- **Widescreen.** core.nfsmw ports the ThirteenAG widescreen fix (MIT; see
+  NOTICE): hor+ field of view per view, the HUD pushed to the screen edges,
+  minimap, FMV and splash fixes. By default the game runs at the screen's
+  aspect ratio, capped at 1080 rows.
+- **Scale follows the window.** After the drawable has held one size for 15
+  frames, the render-target scale is chosen again, so resizing the window or
+  going fullscreen changes the render resolution without a device reset.
+  Checked in the app: a 1664x1080 game went from 1.00x to 1.38x when the
+  window was enlarged.
+- **Shadows.** The game samples depth textures as hardware shadow maps: a
+  Direct3D 9 driver compares the lookup's z with the stored depth. Those
+  stages now use `depth2d` and `sample_compare` (LESSEQUAL, linear). Before
+  this, they read a black placeholder, so cars cast no shadow and the car
+  bodies showed jagged dark edges.
+- **Occlusion queries.** Direct3D 9 occlusion queries count samples on Metal
+  through the render pass's visibility-result buffer. `GetData` returns
+  S_FALSE until the command buffer that holds the query has finished. The
+  game's queries are two-triangle fans at z 0.999 with colour writes off,
+  drawn where the sun is. In the Quick Play sprint that point is off screen
+  (clip-space y from about -3 to -1.8), so the counts there are 0. On the CPU
+  path, a query reports one visible sample.
+- **Bank code.** The 386 routines in the 301 `SOUND/*.abk` banks use 20 x86
+  instruction forms: `mov`/`add`/`sub`/`imul`/`cmp` on `[esi+d]`, `call`
+  into the executable, short `jl`/`jg`, `ret`. `runtime/interp.cpp` runs code
+  outside the image that decodes completely up to its `ret`; calls go back
+  through `recomp_call`. It is checked against Unicorn on random routines
+  (tools/recomp/tests/test_interp_unicorn.py). The race smoke no longer logs
+  any unknown call.
+- **Speedometer "888".** The digital readout is a backlit LCD: its unlit
+  segments are drawn faintly on purpose, as in the original, so "888" behind
+  the digits is by design.
+- **Headless audio.** The smoke host has no mixer, so a streamed DirectSound
+  buffer is re-submitted at each refill there. The app's mixer continues
+  streams. `WAVE_FORMAT_EXTENSIBLE` with a PCM subformat is now read as PCM
+  without a warning.
