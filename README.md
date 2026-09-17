@@ -3,9 +3,10 @@
 [Build & contribute](CONTRIBUTING.md) · [Port analysis](docs/analysis.md) ·
 [Testing](docs/testing.md) · [Changelog](CHANGELOG.md)
 
-A native macOS and iPad recompilation of **Need for Speed: Most Wanted**
-(the 2005 PC Black Edition), in progress. Original game instructions are
-translated to C ahead of time and compiled with the native host, the way
+A recompilation of **Need for Speed: Most Wanted** (the 2005 PC Black
+Edition) for macOS, iPad, Linux, Windows and the browser, in progress.
+Original game instructions are translated to C ahead of time and compiled
+with the native host, the way
 [populous-recomp](https://github.com/veritr1x/populous-recomp) does it.
 
 The runtime, translator, hosts and mod foundation are
@@ -13,35 +14,39 @@ The runtime, translator, hosts and mod foundation are
 submodule `kit/`. This repository holds what is Most Wanted's: `game.toml`
 and `globals.toml` (identity, addresses, curated symbols), `tests/` (the
 config's contract with the kit), `tools/analyze.py` (this game's listing
-export) and docs. The kit is private at the moment, so the submodule needs
-access to it.
+export) and docs.
 
 **You need your own copy of the game.** Game executables, artwork, sound,
 tracks, cinematics, generated game code and replacement packs are prepared
 locally and are not included. See [NOTICE](NOTICE) for ownership and
 dependency credits.
 
-## Status: analysis, not playable
+## Status: playable
 
-The executable is pinned, hashed and measured against the kit; the config
-renders and its tests pass; the kit configures against it; Ghidra exports
-25,768 functions and the kit's translator emits code for all but 40 of
-them, which use MMX, SSE2 and four rarer instructions the kit does not
-model yet. Nothing runs yet. [docs/analysis.md](docs/analysis.md) records the executable's import
-surface, its graphics path and the kit work each needs. The short version:
+The game plays. Direct3D 9 is translated through one shader generator and
+renders on Metal (macOS, iPad), Vulkan (Linux, Windows, and macOS through
+MoltenVK) and WebGPU (the browser).
 
-- Most Wanted renders through **Direct3D 9 with D3DX effect shaders**
-  (31 `.fx` effects compiled into the executable; vertex shader 1.1, pixel
-  shader 1.1 through 2.0). The kit models DirectDraw and fixed-function
-  Direct3D up to version 7; shader-model Direct3D is outside its supported
-  envelope today. This is the blocking item.
-- Audio goes through `winmm` wave output and DirectSound; input through
-  DirectInput 8; the kit shims older versions of both.
-- Online play (`ws2_32`, `tapi32`, `netapi32`, the bundled `server.dll`) is
-  out of scope and needs stubs that fail cleanly.
-- The Windows-only extras in the folder (the ASI loader `dinput8.dll` and the
-  widescreen fix) are not part of the port; their fixes become native host
-  behaviour.
+- **macOS.** Up to 4K with the render scale following the window, 4x
+  multisampling, depth-texture shadow maps and occlusion queries. A pinned 4K
+  run with every option at maximum holds 110-123 fps.
+- **iPad.** Plays by touch; the core mods are compiled into the app, which a
+  stock device needs because it loads no plugins.
+- **Linux.** Renders the race, including under software Vulkan (lavapipe).
+- **Windows.** Cross-compiled with llvm-mingw; runs the whole test script at
+  100-170 fps under CrossOver. A run on Windows hardware is still untested.
+- **The browser.** WebGPU, tested in Chrome and Safari: the game runs on a
+  worker, reads its files from the browser's private storage, and a race runs
+  at 113-166 fps. Reading a render target back is not supported there.
+
+The simulation runs at 120 Hz and the widescreen fix (FOV, HUD, minimap) is
+ported, both in the `core.nfsmw` mod. The audio-bank heap routines run in a
+small x86 interpreter checked against Unicorn. Online play (`ws2_32`,
+`tapi32`, `netapi32`, the bundled `server.dll`) is out of scope and stubbed to
+fail cleanly, and the Windows-only extras in the game folder (the ASI loader
+and the widescreen fix) are not part of the port; their fixes are native host
+behaviour instead. [docs/analysis.md](docs/analysis.md) records the
+executable's graphics path, its effect shaders and each bring-up step.
 
 ## Build on macOS
 
@@ -67,13 +72,20 @@ translation, the apps, the logs) live under ignored `build/`; your
 installation is linked at ignored `original/retail` and the Ghidra listings
 live in ignored `analysis/`.
 
+## Build for the other platforms
+
+Linux and Windows builds are the kit's `--target app` (Windows cross-compiles
+with llvm-mingw), and `tools/build.py --target web` writes a servable site for
+the browser. The kit's [README](kit/README.md) has the prerequisites and the
+serving headers the web build needs.
+
 ## Play on an iPad
 
-Not yet. When the macOS build runs, `tools/build.py --target ios --console`
-builds, signs and installs the app exactly as it does for Populous, staging
-the game directory into the app minus `[bundle].exclude` in `game.toml`
-(cinematics, the uninstaller, the Windows-only DLLs). The touch map will
-need a racing layout, not Populous's pointer gestures.
+`tools/build.py --target ios --console` builds, signs and installs the app and
+streams its console, staging the game directory into the app minus
+`[bundle].exclude` in `game.toml` (the uninstaller, the Windows-only DLLs).
+The core mods are compiled in, which a stock device needs because it loads no
+plugins.
 
 ## Check a change
 
