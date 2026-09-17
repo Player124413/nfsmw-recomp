@@ -767,3 +767,24 @@ settings in core.nfsmw exist but stretch the 4:3 layout.
   buffer is re-submitted at each refill there. The app's mixer continues
   streams. `WAVE_FORMAT_EXTENSIBLE` with a PCM subformat is now read as PCM
   without a warning.
+
+## Run log: every resolution in the video options
+
+- The Video > Resolution option lists "Auto" (the screen's shape, up to 1080
+  rows), then every common size from 640x480 to 7680x4320, plus the screen's
+  own size. The original list has six sizes.
+- game.toml points the option's tables (supported flags `0x0093dbec`,
+  refresh rates `0x009829fc`, label hashes in the switch at `0x0051b7a0`) and
+  its wrap-around (`0x0050f970`) at slots from `0x00a37830`, which
+  core.nfsmw fills. Data seeds recreate the original six for a run without
+  mods.
+- Labels: core.nfsmw answers the string lookup `0x0057e920` for the
+  `OPT_VO_PC_RES_<W>X<H>` hashes (bStringHash: h = h * 33 + c from ~0).
+- The registry value `g_RacingResolution` holds the size packed as
+  `0x80000000 | w << 16 | h`, as the widescreen fix stores it. A value the
+  original game saved (0-5) loads as Auto. Checked: choosing 6016x3384 and
+  accepting reset the device to that size, and the next launch created the
+  device at 6016x3384 with that entry selected.
+- Whatever size is chosen, the renderer still draws at the window's size
+  (never below the game's own), so a size larger than the window is
+  supersampled.

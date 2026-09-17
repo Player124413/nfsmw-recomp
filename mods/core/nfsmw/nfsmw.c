@@ -11,9 +11,16 @@
  * readers of the pooled 1/60 read slot 0x00a37800, and World_Service's initial
  * timestep (.data) is written.
  *
- * RESOLUTION. 0x006c27d0 maps the video option to a width and height. With
- * `widescreen` on it returns the screen's aspect at up to 1080 rows (the
- * renderer draws it at the window's size); `width` and `height` override.
+ * RESOLUTION. 0x006c27d0 maps the video option to a width and height. The
+ * option offers six sizes in the original; here it offers every common size
+ * from 640x480 to 7680x4320 and the screen's own, after an "Auto" entry that
+ * is the screen's shape at up to 1080 rows (the renderer draws any of them at
+ * the window's size). game.toml points the tables the option is checked
+ * against (supported, refresh rate, label) at slots this mod fills, and the
+ * wrap-around at the slot holding the count. The saved value is the size
+ * packed as 0x80000000 | width << 16 | height, as the widescreen fix saves it,
+ * so a list that differs between machines still finds the same size.
+ * `width` and `height` override the option.
  *
  * FIELD OF VIEW. 0x006cf400 builds a view's projection. A hook at its entry
  * reads the view id and sets the aspect term and three scale factors the
@@ -35,6 +42,9 @@ POP_MOD_DECLARE_ABI();
 #define TIMER_CTOR 0x006484e0u
 #define GET_RESOLUTION_A 0x006c27d0u
 #define GET_RESOLUTION_B 0x006c28b0u
+#define LOAD_SETTINGS 0x006c1c00u        /* reads the registry */
+#define SAVE_SETTINGS 0x006c1f10u        /* writes it */
+#define LOCALIZED_WIDE 0x0057e920u       /* cdecl (wchar_t *out, int size, hash) -> al */
 #define VIEW_PROJECTION 0x006cf400u
 #define SET_TRANSFORM 0x006c8000u        /* cdecl (D3DMATRIX *, view id) */
 #define SET_TRANSFORM_RET_A 0x006e6fbcu
@@ -58,6 +68,14 @@ POP_MOD_DECLARE_ABI();
 #define SLOT_SHADOW_DISTANCE 0x00a3781cu
 #define SLOT_MIRROR_A 0x00a37824u
 #define SLOT_MIRROR_B 0x00a37828u
+#define SLOT_RES_LAST 0x00a37830u   /* entries - 1 */
+#define SLOT_RES_COUNT 0x00a37834u  /* entries */
+#define SLOT_RES_SAVED 0x00a37838u  /* the registry value, packed */
+#define TABLE_RES_SUPPORTED 0x00a37840u
+#define TABLE_RES_REFRESH 0x00a37940u
+#define TABLE_RES_LABEL 0x00a37a40u
+#define RES_MAX 64
+#define RESOLUTION_INDEX 0x0090181cu
 #define WORLD_TIMESTEP 0x00903290u
 #define HUD_SCALE_X 0x008af9a4u
 #define HUD_CENTRE_X 0x00894b40u
@@ -72,7 +90,7 @@ POP_MOD_DECLARE_ABI();
 #define ORIGINAL_FRAME_TIME 0x3c888889u /* 1/60 */
 
 static const PopModApi *g_api;
-static uint32_t g_hooks[10];
+static uint32_t g_hooks[14];
 static uint32_t g_frame_time_bits = ORIGINAL_FRAME_TIME;
 
 static int g_widescreen = 1;
@@ -124,14 +142,34 @@ static void timer_frame_time(const PopModApi *api, pop_cpu_v1 *cpu, PopHookInvoc
 
 /* ---- resolution and everything that follows from it ---------------------- */
 
-static void choose_resolution(uint32_t *w, uint32_t *h) {
-    int64_t sw = setting("width", 0), sh = setting("height", 0);
+/* Entry 0 is "Auto"; w and h are 0 there. */
+typedef struct {
+    uint16_t w, h;
+    uint32_t hash;
+    char label[24];
+} ResEntry;
+static ResEntry g_res[RES_MAX];
+static int g_res_count = 0;
+
+static const uint16_t kCommonSizes[][2] = {
+    {640, 480},   {768, 480},   {800, 600},   {854, 480},   {960, 540},   {960, 640},   {1024, 576},
+    {1024, 768},  {1152, 864},  {1280, 720},  {1280, 800},  {1280, 960},  {1280, 1024}, {1360, 768},
+    {1366, 768},  {1400, 1050}, {1440, 900},  {1600, 900},  {1600, 1200}, {1680, 1050}, {1920, 1080},
+    {1920, 1200}, {2048, 1152}, {2048, 1536}, {2560, 1080}, {2560, 1440}, {2560, 1600}, {2880, 1800},
+    {3200, 1800}, {3440, 1440}, {3840, 1600}, {3840, 2160}, {3840, 2400}, {4096, 2160}, {5120, 1440},
+    {5120, 2160}, {5120, 2880}, {6016, 3384}, {7680, 4320},
+};
+
+/* The engine's string hash (bStringHash). */
+static uint32_t string_hash(const char *s) {
+    uint32_t h = 0xffffffffu;
+    while (*s)
+        h = h * 33u + (uint8_t)*s++;
+    return h;
+}
+
+static void screen_shape(uint32_t *w, uint32_t *h) {
     uint32_t screen_w = 0, screen_h = 0;
-    if (sw > 0 && sh > 0) {
-        *w = (uint32_t)sw;
-        *h = (uint32_t)sh;
-        return;
-    }
     if (g_api->screen_size && g_api->screen_size(g_api, &screen_w, &screen_h) == POP_OK && screen_w &&
         screen_h) {
         float aspect = (float)screen_w / (float)screen_h;
@@ -142,6 +180,125 @@ static void choose_resolution(uint32_t *w, uint32_t *h) {
     }
     *w = 1280;
     *h = 720;
+}
+
+static void add_size(uint32_t w, uint32_t h) {
+    if (g_res_count >= RES_MAX || !w || !h || w > 0x7fff || h > 0xffff)
+        return;
+    int at = 1;
+    while (at < g_res_count && (g_res[at].w < w || (g_res[at].w == w && g_res[at].h < h)))
+        ++at;
+    if (at < g_res_count && g_res[at].w == w && g_res[at].h == h)
+        return;
+    memmove(&g_res[at + 1], &g_res[at], (size_t)(g_res_count - at) * sizeof g_res[0]);
+    ResEntry *e = &g_res[at];
+    char key[48];
+    e->w = (uint16_t)w;
+    e->h = (uint16_t)h;
+    snprintf(e->label, sizeof e->label, "%ux%u", w, h);
+    snprintf(key, sizeof key, "OPT_VO_PC_RES_%uX%u", w, h);
+    e->hash = string_hash(key);
+    ++g_res_count;
+}
+
+static void build_resolution_list(void) {
+    uint32_t sw = 0, sh = 0, aw, ah;
+    screen_shape(&aw, &ah);
+    memset(g_res, 0, sizeof g_res);
+    snprintf(g_res[0].label, sizeof g_res[0].label, "Auto (%ux%u)", aw, ah);
+    g_res[0].hash = string_hash("OPT_VO_PC_RES_AUTO");
+    g_res_count = 1;
+    for (size_t i = 0; i < sizeof kCommonSizes / sizeof kCommonSizes[0]; ++i)
+        add_size(kCommonSizes[i][0], kCommonSizes[i][1]);
+    if (g_api->screen_size && g_api->screen_size(g_api, &sw, &sh) == POP_OK)
+        add_size(sw, sh);
+    for (int i = 0; i < RES_MAX; ++i) {
+        g_api->guest_write_u32(g_api, TABLE_RES_SUPPORTED + 4u * (uint32_t)i, i < g_res_count);
+        g_api->guest_write_u32(g_api, TABLE_RES_REFRESH + 4u * (uint32_t)i, 0); /* the default rate */
+        g_api->guest_write_u32(g_api, TABLE_RES_LABEL + 4u * (uint32_t)i, i < g_res_count ? g_res[i].hash : 0);
+    }
+    g_api->guest_write_u32(g_api, SLOT_RES_LAST, (uint32_t)g_res_count - 1);
+    g_api->guest_write_u32(g_api, SLOT_RES_COUNT, (uint32_t)g_res_count);
+}
+
+static int resolution_index(void) {
+    uint32_t i = get_u32(RESOLUTION_INDEX);
+    return i < (uint32_t)g_res_count ? (int)i : 0;
+}
+
+static void choose_resolution(uint32_t *w, uint32_t *h) {
+    int64_t sw = setting("width", 0), sh = setting("height", 0);
+    if (sw > 0 && sh > 0) {
+        *w = (uint32_t)sw;
+        *h = (uint32_t)sh;
+        return;
+    }
+    const ResEntry *e = &g_res[resolution_index()];
+    if (e->w && e->h) {
+        *w = e->w;
+        *h = e->h;
+        return;
+    }
+    screen_shape(w, h);
+}
+
+/* The registry keeps the size, not its place in the list. */
+static void save_settings(const PopModApi *api, pop_cpu_v1 *cpu, PopHookInvocation *inv, void *user) {
+    const ResEntry *e = &g_res[resolution_index()];
+    uint32_t packed = e->w ? 0x80000000u | (uint32_t)e->w << 16 | e->h : 0;
+    (void)inv;
+    (void)user;
+    (void)cpu;
+    api->guest_write_u32(api, SLOT_RES_SAVED, packed);
+}
+
+static void load_settings(const PopModApi *api, pop_cpu_v1 *cpu, PopHookInvocation *inv, void *user) {
+    (void)inv;
+    (void)user;
+    /* No value, or one the original game saved (a place in its own list of
+     * six), leaves "Auto". */
+    api->guest_write_u32(api, SLOT_RES_SAVED, 0);
+    api->guest_write_u32(api, RESOLUTION_INDEX, 0);
+    api->call_original(api, cpu->target, cpu);
+    uint32_t packed = get_u32(SLOT_RES_SAVED);
+    int index = 0;
+    if (packed & 0x80000000u) {
+        uint32_t w = (packed >> 16) & 0x7fff, h = packed & 0xffff;
+        for (int i = 1; i < g_res_count; ++i)
+            if (g_res[i].w == w && g_res[i].h == h)
+                index = i;
+    }
+    api->guest_write_u32(api, RESOLUTION_INDEX, (uint32_t)index);
+}
+
+/* The option's labels: the game has strings for its own six sizes only. */
+static void localized_wide(const PopModApi *api, pop_cpu_v1 *cpu, PopHookInvocation *inv, void *user) {
+    uint32_t out = 0, size = 0, hash = 0;
+    (void)inv;
+    (void)user;
+    api->guest_read_u32(api, cpu->esp + 4, &out);
+    api->guest_read_u32(api, cpu->esp + 8, &size);
+    api->guest_read_u32(api, cpu->esp + 12, &hash);
+    for (int i = 0; i < g_res_count && out && size; ++i) {
+        if (g_res[i].hash != hash)
+            continue;
+        const char *s = g_res[i].label;
+        size_t n = strlen(s);
+        if (n + 1 > size)
+            n = size - 1;
+        void *p;
+        if (api->guest_ptr(api, out, (uint32_t)(2 * (n + 1)), &p) != POP_OK)
+            break;
+        uint8_t *b = (uint8_t *)p;
+        for (size_t k = 0; k < n; ++k) {
+            b[2 * k] = (uint8_t)s[k];
+            b[2 * k + 1] = 0;
+        }
+        b[2 * n] = b[2 * n + 1] = 0;
+        api->hook_return(api, cpu, (cpu->eax & 0xffffff00u) | 1u, 0);
+        return;
+    }
+    api->call_original(api, cpu->target, cpu);
 }
 
 static void apply_resolution(uint32_t w, uint32_t h) {
@@ -178,16 +335,13 @@ static void resolution(const PopModApi *api, pop_cpu_v1 *cpu, PopHookInvocation 
     uint32_t w, h, pw, ph;
     (void)inv;
     (void)user;
-    if (!g_widescreen && setting("width", 0) <= 0) {
-        api->call_original(api, cpu->target, cpu);
-        return;
-    }
     choose_resolution(&w, &h);
     if (api->guest_read_u32(api, cpu->esp + 4, &pw) == POP_OK && pw)
         api->guest_write_u32(api, pw, w);
     if (api->guest_read_u32(api, cpu->esp + 8, &ph) == POP_OK && ph)
         api->guest_write_u32(api, ph, h);
-    apply_resolution(w, h);
+    if (g_widescreen)
+        apply_resolution(w, h);
     api->hook_return(api, cpu, cpu->eax, 8);
 }
 
@@ -383,6 +537,13 @@ PopModStatus pop_mod_init(const PopModApi *api) {
     /* The twin getter has no callers in this build and no listing entry. */
     if (install(GET_RESOLUTION_B, resolution, POP_HOOK_REPLACE, 2) != POP_OK)
         g_hooks[2] = 0;
+    build_resolution_list();
+    if ((s = install(LOAD_SETTINGS, load_settings, POP_HOOK_REPLACE, 10)) != POP_OK)
+        return s;
+    if ((s = install(SAVE_SETTINGS, save_settings, POP_HOOK_BEFORE, 11)) != POP_OK)
+        return s;
+    if ((s = install(LOCALIZED_WIDE, localized_wide, POP_HOOK_REPLACE, 12)) != POP_OK)
+        return s;
     if (!g_widescreen)
         return POP_OK;
 
@@ -419,7 +580,7 @@ PopModStatus pop_mod_init(const PopModApi *api) {
 }
 
 PopModStatus pop_mod_exit(void) {
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 14; ++i)
         if (g_hooks[i])
             g_api->hook_remove(g_api, g_hooks[i]);
     return POP_OK;

@@ -96,12 +96,45 @@ instruction_patches = [
     { at = 0x0059a02e, text = "PUSH 0x3f2aaaab" },
     { at = 0x0059a033, text = "PUSH 0xbf2aaaab" },
     { at = 0x0059a038, text = "PUSH 0xbf2aaaab" },
+    # The resolution option's tables (supported, refresh rate, label hash)
+    # and its wrap-around move to slots core.nfsmw fills with a longer list.
+    { at = 0x0050f99c, text = "MOV EAX,dword ptr [0x00a37830]" },
+    { at = 0x0050f9a8, text = "CMP EAX,dword ptr [0x00a37834]" },
+    { at = 0x0050f9af, text = "MOV EBX,dword ptr [EAX*0x4 + 0xa37840]" },
+    { at = 0x006c1959, text = "MOV ECX,dword ptr [EAX*0x4 + 0xa37840]" },
+    { at = 0x006c1970, text = "MOV ECX,dword ptr [EAX*0x4 + 0xa37840]" },
+    { at = 0x006db1b4, text = "MOV EAX,dword ptr [EDX*0x4 + 0xa37940]" },
+    { at = 0x006db21b, text = "MOV ECX,dword ptr [EDI*0x4 + 0xa37940]" },
+    { at = 0x006db2ec, text = "MOV EAX,dword ptr [EDX*0x4 + 0xa37940]" },
+    { at = 0x006e6bc4, text = "MOV EBP,dword ptr [ECX*0x4 + 0xa37940]" },
+    { at = 0x006e72a7, text = "MOV EAX,dword ptr [EDX*0x4 + 0xa37940]" },
+    { at = 0x0051b7e2, text = "MOV EAX,dword ptr [ECX*0x4 + 0xa37a40]" },
+    { at = 0x0051b7e4, text = "CMP ECX,0x3f" },
+    { at = 0x0051b7e9, text = "JMP 0x0051b818" },
+    # The registry keeps the size packed (core.nfsmw), not the list index.
+    { at = 0x006c1e24, text = "PUSH 0xa37838" },
+    { at = 0x006c20a0, text = "PUSH 0xa37838" },
 ]
 data_seeds = [
     { addr = 0x00a37810, float = 1.0 },
     { addr = 0x00a37814, float = 1.0 },
     { addr = 0x00a37824, float = 450.0 },
     { addr = 0x00a37828, float = 190.0 },
+    # The original six resolutions, for a run without core.nfsmw.
+    { addr = 0x00a37830, value = 5 },
+    { addr = 0x00a37834, value = 6 },
+    { addr = 0x00a37840, value = 1 },
+    { addr = 0x00a37844, value = 1 },
+    { addr = 0x00a37848, value = 1 },
+    { addr = 0x00a3784c, value = 1 },
+    { addr = 0x00a37850, value = 1 },
+    { addr = 0x00a37854, value = 1 },
+    { addr = 0x00a37a40, value = 0xdccbd59e },
+    { addr = 0x00a37a44, value = 0x6d6bb416 },
+    { addr = 0x00a37a48, value = 0xa7470774 },
+    { addr = 0x00a37a4c, value = 0x4ef21b32 },
+    { addr = 0x00a37a50, value = 0x2d31055a },
+    { addr = 0x00a37a54, value = 0x76667b12 },
 ]
 entry_points = [
     0x006a8870,  # the unlisted function 0x006a8e70 jumps to; it holds the switch at 0x006a8a14
