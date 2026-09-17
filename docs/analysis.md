@@ -788,3 +788,23 @@ settings in core.nfsmw exist but stretch the 4:3 layout.
 - Whatever size is chosen, the renderer still draws at the window's size
   (never below the game's own), so a size larger than the window is
   supersampled.
+
+## Run log: cinematics, frozen movies, fullscreen, F10
+
+- **Frozen movies.** The movie stream is pumped by a thread waiting on a
+  waitable timer (`0x007ec601`, re-armed at absolute FILETIME due times).
+  The kit's SetWaitableTimer never fired, so a cinematic stalled once its
+  buffer ran dry. The main thread then span in `0x007f7c7e` waiting on the
+  `STRM` ring, and because the game runs on the app's main thread, the
+  window stopped responding (it could not be brought back with Cmd-Tab).
+  Timers now fire.
+- **Cropped cinematics.** The widescreen fix's constants scaled the movie
+  quad by 4/3 (cropped below 16:9), and the front-end transform scale shrank
+  everything else during movies, pulling off-screen elements ("EVENT
+  HANDLER", a black box) into view. The quad's corners now come from slots
+  (`0x00a37b40`) that core.nfsmw sizes to fit the ~1.68:1 picture inside a
+  movie frame. The front end is no longer scaled while a movie plays.
+- **Fullscreen.** Entering fullscreen with the green button now becomes the
+  Display setting instead of being undone on the next frame.
+- **F10.** The mod settings page registers its keys on Direct3D 9 presents,
+  which carry no guest pixels.

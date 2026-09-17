@@ -91,11 +91,12 @@ instruction_patches = [
     { at = 0x005a3080, text = "NOP" },
     { at = 0x005a3141, text = "PUSH 0xc4df3ff2" },
     { at = 0x005a30b1, text = "CALL 0x00514cc0" },
-    # Cinematics fill a 16:9 screen (cropped).
-    { at = 0x0059a029, text = "PUSH 0x3f2aaaab" },
-    { at = 0x0059a02e, text = "PUSH 0x3f2aaaab" },
-    { at = 0x0059a033, text = "PUSH 0xbf2aaaab" },
-    { at = 0x0059a038, text = "PUSH 0xbf2aaaab" },
+    # The cinematic quad's half height and half width (bottom, right, top,
+    # left), from slots core.nfsmw sizes so the picture fits the screen.
+    { at = 0x0059a029, text = "PUSH dword ptr [0x00a37b40]" },
+    { at = 0x0059a02e, text = "PUSH dword ptr [0x00a37b44]" },
+    { at = 0x0059a033, text = "PUSH dword ptr [0x00a37b48]" },
+    { at = 0x0059a038, text = "PUSH dword ptr [0x00a37b4c]" },
     # The resolution option's tables (supported, refresh rate, label hash)
     # and its wrap-around move to slots core.nfsmw fills with a longer list.
     { at = 0x0050f99c, text = "MOV EAX,dword ptr [0x00a37830]" },
@@ -120,6 +121,11 @@ data_seeds = [
     { addr = 0x00a37814, float = 1.0 },
     { addr = 0x00a37824, float = 450.0 },
     { addr = 0x00a37828, float = 190.0 },
+    # The cinematic quad as the original draws it (4:3).
+    { addr = 0x00a37b40, float = 0.5 },
+    { addr = 0x00a37b44, float = 0.5 },
+    { addr = 0x00a37b48, float = -0.5 },
+    { addr = 0x00a37b4c, float = -0.5 },
     # The original six resolutions, for a run without core.nfsmw.
     { addr = 0x00a37830, value = 5 },
     { addr = 0x00a37834, value = 6 },

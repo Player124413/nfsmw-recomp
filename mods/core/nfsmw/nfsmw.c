@@ -29,8 +29,12 @@
  *
  * HUD. The game's own widescreen HUD layout is forced on (game.toml). This mod
  * sets its horizontal scale and centre, moves the left and right HUD groups
- * and the minimap out to the screen edges, and scales the front end and the
- * cinematics down when the screen is narrower than they are. */
+ * and the minimap out to the screen edges, and scales the front end down when
+ * the screen is narrower than it is.
+ *
+ * CINEMATICS. The movies are 4:3 frames with the picture letterboxed inside
+ * (about 1.68:1). Their quad is sized so that picture fills as much of the
+ * screen as it can without losing any of it. */
 #include "pop_mod_api.h"
 #include <math.h>
 #include <stdio.h>
@@ -74,6 +78,12 @@ POP_MOD_DECLARE_ABI();
 #define TABLE_RES_SUPPORTED 0x00a37840u
 #define TABLE_RES_REFRESH 0x00a37940u
 #define TABLE_RES_LABEL 0x00a37a40u
+#define SLOT_FMV_BOTTOM 0x00a37b40u
+#define SLOT_FMV_RIGHT 0x00a37b44u
+#define SLOT_FMV_TOP 0x00a37b48u
+#define SLOT_FMV_LEFT 0x00a37b4cu
+/* The part of a movie frame's height its picture covers. */
+#define FMV_PICTURE_HEIGHT 0.796f
 #define RES_MAX 64
 #define RESOLUTION_INDEX 0x0090181cu
 #define WORLD_TIMESTEP 0x00903290u
@@ -97,7 +107,7 @@ static int g_widescreen = 1;
 static float g_aspect = 4.0f / 3.0f;
 static float g_hor = 1.0f, g_vert = 1.215f, g_half = 0.43434f;
 static float g_hud_offset = 0.0f; /* how far the side HUD groups move out */
-static float g_fe_scale = 1.0f, g_fmv_scale = 1.0f;
+static float g_fe_scale = 1.0f;
 static int g_hud_dirty = 0;
 static uint32_t g_matrix = 0, g_floats = 0; /* guest scratch */
 
@@ -325,9 +335,19 @@ static void apply_resolution(uint32_t w, uint32_t h) {
     g_fe_scale = fe * g_aspect / (4.0f / 3.0f);
     if (g_fe_scale > fe)
         g_fe_scale = fe;
-    g_fmv_scale = g_aspect / (16.0f / 9.0f);
-    if (g_fmv_scale > 1.0f)
-        g_fmv_scale = 1.0f;
+    {
+        /* 0.5 is the 4:3 frame's half size; the screen is aspect / (4/3) of
+         * that wide and the picture 1 / FMV_PICTURE_HEIGHT of it tall. */
+        float s = g_aspect / (4.0f / 3.0f);
+        if (s > 1.0f / FMV_PICTURE_HEIGHT)
+            s = 1.0f / FMV_PICTURE_HEIGHT;
+        if (s < 1.0f)
+            s = 1.0f;
+        put_float(SLOT_FMV_BOTTOM, 0.5f * s);
+        put_float(SLOT_FMV_RIGHT, 0.5f * s);
+        put_float(SLOT_FMV_TOP, -0.5f * s);
+        put_float(SLOT_FMV_LEFT, -0.5f * s);
+    }
     g_hud_dirty = 1;
 }
 
@@ -373,7 +393,9 @@ static void view_projection(const PopModApi *api, pop_cpu_v1 *cpu, PopHookInvoca
 static void set_transform(const PopModApi *api, pop_cpu_v1 *cpu, PopHookInvocation *inv, void *user) {
     uint32_t mat;
     void *src;
-    float scale = get_u32(MOVIE_PLAYER) ? g_fmv_scale : g_fe_scale;
+    /* A cinematic's quad is sized on its own; the rest of the front end keeps
+     * its place, so what sits off screen stays there. */
+    float scale = get_u32(MOVIE_PLAYER) ? 1.0f : g_fe_scale;
     (void)inv;
     (void)user;
     if (scale == 1.0f || !g_matrix || api->guest_read_u32(api, cpu->esp + 4, &mat) != POP_OK || !mat)
