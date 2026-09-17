@@ -503,6 +503,14 @@ builtin = "none"
 # for the keypad yet.
 rows = ["window", "performance_overlay"]
 
+[launcher]
+# Opens when the executable is missing or wrong, with --launcher,
+# RECOMP_LAUNCHER=1, or Shift/Alt held at start. Store ids are unverified and
+# left empty.
+title = "Need for Speed: Most Wanted"
+install_names = ["Need for Speed Most Wanted", "NFS Most Wanted", "Most Wanted"]
+min_free_mb = 300
+
 [setup]
 # tools/setup.py: what a supported installation must contain. No annotation
 # metadata exists for this executable; tools/analyze.py runs Ghidra's own
