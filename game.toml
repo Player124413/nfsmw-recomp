@@ -44,7 +44,17 @@ volatile_reads = []
 # real code; neither is 16-byte aligned.
 # The four above, plus pointer-referenced helpers found by scanning the image
 # (2026-09-17, docs/analysis.md).
+# The engine's frame time, 1/60, is one pooled .rdata float with 17 readers.
+# The three that set the simulation rate read a slot in the section padding
+# instead, which the core.nfsmw mod fills (mods/core/nfsmw/nfsmw.c).
+operand_redirects = [
+    { at = 0x006612ea, from = 0x008970f0, to = 0x00a37800 },  # FMUL: the real timestep
+    { at = 0x0065c78d, from = 0x008970f0, to = 0x00a37800 },  # FLD: GetDebugRealTime
+    { at = 0x0065c7d7, from = 0x008970f0, to = 0x00a37800 },  # FLD: GetDebugRealTime
+]
 entry_points = [
+    0x006a8e70,  # a vtable method right after a switch's byte table; Ghidra read it as data
+    0x0081a7a6,  # a vtable method in the codec region, missing from the listing
     0x00808f3e,  # table-referenced codec routine
     0x0080a1e5,  # table-referenced codec routine
     0x0080b6be,  # table-referenced codec routine
@@ -386,6 +396,13 @@ mouse_device_ptr = 0x00a37f44
 mouse_device_right = 0x00a37f48
 # host/smoke_main.cpp: the camera record the smoke script inspects. Sentinel.
 camera = 0x00a37f50
+# mods/game_view.cpp: Populous's seven sprite routines. This game has none.
+sprites = []
+
+[mods]
+# The mod runtime's Populous integrations hook Populous routines by address;
+# this game has none of them.
+builtin = "none"
 
 [setup]
 # tools/setup.py: what a supported installation must contain. No annotation

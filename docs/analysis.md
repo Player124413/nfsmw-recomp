@@ -708,3 +708,24 @@ Open problems:
 - The CPU rasterizer is slow in the race, and the long script can hit the
   watchdog. Depth, glare and the in-race HUD still look wrong.
 - `GetLastActivePopup` is missing; only the CRT's error path asks for it.
+
+## Run log: Metal, 4K and 120 Hz (kit bc9f7bc)
+
+- **Direct3D 9 on Metal.** Shaders are translated to MSL; textures, surfaces
+  and buffers are mirrored on the GPU. Two bugs kept the first GPU frames
+  black: the effect state table was off by eight after WRAP7 (index 65,
+  POINTSCALE_A = 1.0, landed on COLORWRITEENABLE), and shared effect
+  parameters (COLORWRITEMODE, BLENDSTATE) never reached the other effects in
+  their pool, so cars, roads and trees wrote no colour.
+- **4K.** Render targets render at a scale (RECOMP_D3D9_SCALE; by default at
+  least 2160 rows), so the game keeps its 4:3 640x480 logic and the GPU draws
+  2880x2160. A race averages about 165 fps there in the headless host.
+- **120 Hz.** The engine steps and caps at 1/60 s. mods/core/nfsmw sets
+  the simulation rate (default 120): it rewrites the timer's constructor
+  argument and fills 0x00a37800, which three redirected readers of the
+  pooled 1/60 now read (game.toml operand_redirects).
+- **Missing entry.** 0x006a8e70, a vtable method just past a switch's byte
+  table, crashed one race type; Ghidra had read it as data.
+
+Open: true 16:9 needs the HUD and field-of-view fixes; the resolution
+settings in core.nfsmw exist but stretch the 4:3 layout.

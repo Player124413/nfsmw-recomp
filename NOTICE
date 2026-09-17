@@ -25,3 +25,9 @@ The folder this port was measured from also contains third-party Windows
 components that are not part of the port and are excluded from every bundle:
 an ASI loader shipped as dinput8.dll and the NFS Most Wanted widescreen fix
 under scripts/. They retain their own ownership and licenses.
+
+The engine-rate and resolution patch points in mods/core/nfsmw (the
+simulation frame time, its readers, and the resolution getters) follow the
+analysis in ThirteenAG's WidescreenFixesPack, NFSMostWanted.WidescreenFix,
+MIT License, Copyright (c) 2018 ThirteenAG. No code from it is included;
+the addresses were checked against this executable.

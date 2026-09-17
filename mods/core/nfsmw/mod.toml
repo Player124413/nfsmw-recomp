@@ -1,0 +1,20 @@
+# The game's own settings that the original PC release fixed in code: the
+# engine's simulation rate and the rendering resolution. What the community
+# widescreen fix (ThirteenAG, MIT) did with binary patches, done here with
+# hooks and data writes, because patched code bytes mean nothing to a
+# recompiled game. See NOTICE and docs/analysis.md.
+id = "core.nfsmw"
+name = "Most Wanted engine settings"
+version = "1.0.0"
+api = 1
+game = "80774c2e5d619b4f120b48d4462896fd504c263399d203a238769cffde1d253c"
+requires = ["core.hooks >= 1.0.0"]
+affects_simulation = true
+
+[plugin]
+path = "nfsmw.dylib"
+
+[settings]
+sim_rate = { type = "int", default = 120, min = 30, max = 480, label = "Simulation and frame rate (Hz)" }
+width = { type = "int", default = 0, min = 0, max = 16384, label = "Render width (0: the game's option)" }
+height = { type = "int", default = 0, min = 0, max = 16384, label = "Render height (0: the game's option)" }
