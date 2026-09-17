@@ -505,8 +505,10 @@ rows = ["window", "performance_overlay"]
 
 [launcher]
 # Opens when the executable is missing or wrong, with --launcher,
-# RECOMP_LAUNCHER=1, or Shift/Alt held at start. Store ids are unverified and
-# left empty.
+# RECOMP_LAUNCHER=1, or Shift/Alt held at start. No store sells this game
+# (checked 2026-09-17): GOG only lists it on its Dreamlist, and Steam's "Most
+# Wanted" (app 1262560) is Criterion's 2012 game, a different executable. So
+# store, gog_ids and steam_ids stay empty; detection goes by install_names.
 title = "Need for Speed: Most Wanted"
 install_names = ["Need for Speed Most Wanted", "NFS Most Wanted", "Most Wanted"]
 min_free_mb = 300
