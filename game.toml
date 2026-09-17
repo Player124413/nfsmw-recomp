@@ -44,6 +44,8 @@ volatile_reads = []
 # real code; neither is 16-byte aligned.
 # The four above, plus pointer-referenced helpers found by scanning the image
 # (2026-09-17, docs/analysis.md).
+# Native replacements for the renderer's hottest x87 routines (native/).
+native = { header = "native/overrides.h", sources = ["native/culling.c"] }
 # The engine's frame time, 1/60, is one pooled .rdata float with 17 readers.
 # The three that set the simulation rate read a slot in the section padding
 # instead, which the core.nfsmw mod fills (mods/core/nfsmw/nfsmw.c).
@@ -494,6 +496,12 @@ sprites = []
 # The mod runtime's Populous integrations hook Populous routines by address;
 # this game has none of them.
 builtin = "none"
+
+[settings]
+# The F10 page's rows. The renderer rows drive Populous's Direct3D renderer
+# and frame loop; this game draws through Direct3D 9 and has no iPad build
+# for the keypad yet.
+rows = ["window", "performance_overlay"]
 
 [setup]
 # tools/setup.py: what a supported installation must contain. No annotation
