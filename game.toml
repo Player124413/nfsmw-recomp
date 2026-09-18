@@ -469,6 +469,16 @@ entry_points = [
   0x0088dedf,
   0x0088deeb,
   0x0088def6,
+  # Proven by a run: tools/discover.py recorded these as calls the
+  # translation could not deliver. The withdraw pass had dropped each as a
+  # guess whose own dispatch went nowhere, and 0x006db6c0 is a thread start
+  # routine, so the thread it belongs to did nothing at all.
+  0x006db6c0,
+  0x00883c80,
+  0x00887d80,
+  0x00889f60,
+  0x007cd5e4,  # an SEH handler; without it a fault the game handles itself
+               # reached the dispatcher as ExceptionContinueExecution
 ]
 
 [hooks]
