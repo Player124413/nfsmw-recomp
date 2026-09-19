@@ -63,16 +63,16 @@ void* findSymbol(const char* name) {
 
 void resolveAll() {
     std::string missing;
-    g_init = static_cast<InitFn>(findSymbol("nfsmw_android_init"));
-    g_key = static_cast<KeyFn>(findSymbol("nfsmw_android_key"));
-    g_shutdown = static_cast<VoidFn>(findSymbol("nfsmw_android_shutdown"));
-    g_pause = static_cast<VoidFn>(findSymbol("nfsmw_android_pause"));
-    g_resume = static_cast<VoidFn>(findSymbol("nfsmw_android_resume"));
-    g_touch = static_cast<TouchFn>(findSymbol("nfsmw_android_touch"));
-    g_request_shutdown = static_cast<VoidFn>(findSymbol("nfsmw_android_request_shutdown"));
-    g_set_render_scale = static_cast<ScaleFn>(findSymbol("nfsmw_android_set_render_scale"));
-    g_set_frame_limit = static_cast<LimitFn>(findSymbol("nfsmw_android_set_frame_limit"));
-    g_resize = static_cast<ResizeFn>(findSymbol("nfsmw_android_resize"));
+    g_init = reinterpret_cast<InitFn>(findSymbol("nfsmw_android_init"));
+    g_key = reinterpret_cast<KeyFn>(findSymbol("nfsmw_android_key"));
+    g_shutdown = reinterpret_cast<VoidFn>(findSymbol("nfsmw_android_shutdown"));
+    g_pause = reinterpret_cast<VoidFn>(findSymbol("nfsmw_android_pause"));
+    g_resume = reinterpret_cast<VoidFn>(findSymbol("nfsmw_android_resume"));
+    g_touch = reinterpret_cast<TouchFn>(findSymbol("nfsmw_android_touch"));
+    g_request_shutdown = reinterpret_cast<VoidFn>(findSymbol("nfsmw_android_request_shutdown"));
+    g_set_render_scale = reinterpret_cast<ScaleFn>(findSymbol("nfsmw_android_set_render_scale"));
+    g_set_frame_limit = reinterpret_cast<LimitFn>(findSymbol("nfsmw_android_set_frame_limit"));
+    g_resize = reinterpret_cast<ResizeFn>(findSymbol("nfsmw_android_resize"));
 
     if (!g_init) missing += "nfsmw_android_init, ";
     if (!g_key) missing += "nfsmw_android_key";

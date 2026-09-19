@@ -75,7 +75,7 @@ object JsonLite {
 
         fun parseValue(): JsonValue {
             skipWs()
-            return when (val c = peek()) {
+            return when (peek()) {
                 '{' -> parseObject()
                 '[' -> parseArray()
                 '"' -> JsonValue.Str(parseString())
@@ -101,7 +101,7 @@ object JsonLite {
                 expect(':')
                 m[key] = parseValue()
                 skipWs()
-                when (val c = peek()) {
+                when (peek()) {
                     ',' -> i++
                     '}' -> { i++; return JsonValue.Obj(m) }
                     else -> throw JsonLiteException("Expected ',' or '}' at offset $i")
@@ -120,7 +120,7 @@ object JsonLite {
             while (true) {
                 list.add(parseValue())
                 skipWs()
-                when (val c = peek()) {
+                when (peek()) {
                     ',' -> i++
                     ']' -> { i++; return JsonValue.Arr(list) }
                     else -> throw JsonLiteException("Expected ',' or ']' at offset $i")

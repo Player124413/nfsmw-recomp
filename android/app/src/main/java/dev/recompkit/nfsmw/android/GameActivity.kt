@@ -53,9 +53,9 @@ class GameActivity : AppCompatActivity() {
         overlay.gameInput = object : TouchControlsOverlay.GameInput {
             override fun keyDown(code: Int) { runtime.key(code, true) }
             override fun keyUp(code: Int) { runtime.key(code, false) }
-            override fun touchDown(id: Int, x: Float, y: Float) { runtime.touch(id, 0, x, y) }
-            override fun touchMove(id: Int, x: Float, y: Float) { runtime.touch(id, 1, x, y) }
-            override fun touchUp(id: Int, x: Float, y: Float) { runtime.touch(id, 2, x, y) }
+            override fun touchDown(pointerId: Int, x: Float, y: Float) { runtime.touch(pointerId, 0, x, y) }
+            override fun touchMove(pointerId: Int, x: Float, y: Float) { runtime.touch(pointerId, 1, x, y) }
+            override fun touchUp(pointerId: Int, x: Float, y: Float) { runtime.touch(pointerId, 2, x, y) }
         }
         overlay.onLayoutChanged = { ControlStore.save(this, overlay.layout); panel?.refresh() }
 
@@ -109,11 +109,10 @@ class GameActivity : AppCompatActivity() {
     private fun hideSystemBars() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         // WindowCompat (not window.insetsController): the latter needs API 30.
-        WindowCompat.getInsetsController(window, window.decorView)?.let { c ->
-            c.hide(WindowInsetsCompat.Type.systemBars())
-            c.systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
     @Deprecated("Deprecated in Java")
