@@ -24,6 +24,20 @@
     <string name="staging_body">Копируем %1$d из %2$d — %3$s из %4$s</string>
     <string name="staging_failed">Не удалось подготовить игровые файлы</string>
 
+    <string name="status_files_missing">Не найдены — импортируйте с телефона</string>
+    <string name="status_files_imported">Импортированы — %1$d файлов · %2$s</string>
+    <string name="import_hint">В эту сборку файлы игры не вшиты. Скопируйте каталог установки игры на телефон (папкой или zip-архивом) и импортируйте его здесь. Windows-исполняемые файлы и прочий мусор по правилам бандла пропускаются автоматически.</string>
+    <string name="import_folder">Импортировать из папки</string>
+    <string name="import_zip">Импортировать из zip</string>
+    <string name="import_prompt_title">Файлы игры не найдены</string>
+    <string name="import_prompt_body">В эту сборку файлы игры не вшиты. Скопируйте каталог установки игры на телефон (папкой или zip-архивом) и импортируйте его.</string>
+    <string name="importing_title">Импорт игровых файлов</string>
+    <string name="importing_body">Копируем %1$d из %2$d файлов — %3$s из %4$s</string>
+    <string name="import_done_title">Файлы игры импортированы</string>
+    <string name="import_done_body">Скопировано в приложение: %1$d файлов · %2$s.</string>
+    <string name="import_failed">Импорт не удался</string>
+    <string name="cancel">Отмена</string>
+
     <string name="settings_render_scale">Масштаб рендера</string>
     <string name="settings_frame_limit">Лимит кадров</string>
     <string name="settings_unlimited">Без лимита</string>

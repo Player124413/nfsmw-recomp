@@ -68,7 +68,10 @@ def main():
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--lib", required=True, help="the recompiled game library (aarch64)")
-    ap.add_argument("--game-dir", required=True, help="your game installation directory")
+    ap.add_argument("--game-dir",
+                    help="your game installation directory (omit for a slim "
+                         "build: lib only, the launcher imports the game "
+                         "files from the phone)")
     ap.add_argument("--out", required=True, help="output zip path")
     ap.add_argument("--exclude", action="append", default=[],
                     help="extra exclusion pattern (basename glob), repeatable")
@@ -78,7 +81,7 @@ def main():
 
     if not os.path.isfile(args.lib):
         sys.exit("lib not found: " + args.lib)
-    if not os.path.isdir(args.game_dir):
+    if args.game_dir is not None and not os.path.isdir(args.game_dir):
         sys.exit("game dir not found: " + args.game_dir)
 
     excludes = [] if args.no_bundle_excludes else bundle_excludes(find_game_toml())
@@ -98,21 +101,26 @@ def main():
     size = 0
     with zipfile.ZipFile(args.out, "w", compression=zipfile.ZIP_STORED) as zf:
         zf.write(args.lib, "lib/arm64-v8a/libnfsmw.so")
-        for root, dirs, files in os.walk(args.game_dir):
-            dirs[:] = sorted(d for d in dirs if not d.startswith(".") and not excluded(d))
-            for name in sorted(files):
-                if name.startswith(".") or excluded(name):
-                    continue
-                full = os.path.join(root, name)
-                rel = os.path.relpath(full, args.game_dir).replace(os.sep, "/")
-                zf.write(full, "game/" + rel)
-                count += 1
-                size += os.path.getsize(full)
+        if args.game_dir is not None:
+            for root, dirs, files in os.walk(args.game_dir):
+                dirs[:] = sorted(d for d in dirs if not d.startswith(".") and not excluded(d))
+                for name in sorted(files):
+                    if name.startswith(".") or excluded(name):
+                        continue
+                    full = os.path.join(root, name)
+                    rel = os.path.relpath(full, args.game_dir).replace(os.sep, "/")
+                    zf.write(full, "game/" + rel)
+                    count += 1
+                    size += os.path.getsize(full)
 
-    print("wrote %s: %d game files (%d MB)%s + libnfsmw.so"
-          % (args.out, count, size // (1024 * 1024), renamed))
-    if excludes:
-        print("excluded by patterns: %s" % ", ".join(excludes))
+    if args.game_dir is None:
+        print("wrote %s%s: slim build (lib only) - the launcher imports the "
+              "game files from the phone on first launch" % (args.out, renamed))
+    else:
+        print("wrote %s: %d game files (%d MB)%s + libnfsmw.so"
+              % (args.out, count, size // (1024 * 1024), renamed))
+        if excludes:
+            print("excluded by patterns: %s" % ", ".join(excludes))
 
 
 if __name__ == "__main__":

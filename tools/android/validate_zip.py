@@ -209,8 +209,10 @@ def main():
 
     game_entries = find_game(zf, lib_path)
     if not game_entries:
-        die("the zip contains only the library - where are the game files? "
-            "Put them under a top-level game/ directory (see docs/android.md).")
+        # A slim build: the launcher imports the game files from the phone
+        # on first launch (folder or zip, see docs/android.md).
+        print("WARNING: the zip contains only the library - slim build: the "
+              "launcher will import the game files from the phone", file=sys.stderr)
 
     sizes = [zf.getinfo(n).file_size for n, _ in game_entries]
     total = sum(sizes)
@@ -219,12 +221,13 @@ def main():
         ext = os.path.splitext(rel)[1].lower() or "(none)"
         exts[ext] = exts.get(ext, 0) + 1
     warnings = []
-    if total < 50 * 1024 * 1024:
-        warnings.append("the game directory is only %d MB; a full install is over 1 GB"
-                        % (total // (1024 * 1024)))
-    for need in ("SOUND", "TRACKS", "GLOBAL"):
-        if not any(rel.split("/")[0].upper() == need for _, rel in game_entries):
-            warnings.append("no %s/ directory in the game files" % need)
+    if game_entries:
+        if total < 50 * 1024 * 1024:
+            warnings.append("the game directory is only %d MB; a full install is over 1 GB"
+                            % (total // (1024 * 1024)))
+        for need in ("SOUND", "TRACKS", "GLOBAL"):
+            if not any(rel.split("/")[0].upper() == need for _, rel in game_entries):
+                warnings.append("no %s/ directory in the game files" % need)
 
     zip_sha = sha256_stream(open(args.zip_path, "rb"))
 
@@ -250,6 +253,10 @@ def main():
             shutil.rmtree(jni)
         if os.path.isdir(assets):
             shutil.rmtree(assets)
+
+        # A slim build (no game files) still needs the directory for the
+        # marker manifest.
+        os.makedirs(assets, exist_ok=True)
 
         lib_out = os.path.join(jni, LIB_NAME)
         lib_sha = copy_entry(zf, lib_path, lib_out)

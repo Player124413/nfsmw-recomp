@@ -37,7 +37,7 @@ release.zip
 ├── lib/
 │   └── arm64-v8a/
 │       └── libnfsmw.so        # required: the recompiled game, aarch64 ELF
-└── game/                      # required: the game directory
+└── game/                      # optional: the game directory (full build)
     ├── CARS/ FRONTEND/ GLOBAL/ SOUND/ TRACKS/ MOVIES/ ...
     └── (your installation minus [bundle].exclude from game.toml)
 ```
@@ -50,9 +50,11 @@ Rules the validator (`tools/android/validate_zip.py`) enforces:
   DLL renamed, an armeabi-v7a build, or a text file fails the run with a
   message.
 - The game files live under a top-level `game/` directory (an `assets/`
-  directory, or loose top-level directories, also work).
+  directory, or loose top-level directories, also work). A zip with only
+  the library is a valid **slim build** (see below): the APK ships without
+  the game files, and the launcher imports them from the phone.
 - Warnings (not failures): a game directory under ~50 MB, missing
-  `SOUND/` `TRACKS/` `GLOBAL/`.
+  `SOUND/` `TRACKS/` `GLOBAL/`, and a lib-only zip (slim build).
 
 Build the zip locally from the repository root:
 
@@ -89,6 +91,35 @@ without them), or set the repository secrets `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
 `S3_SECRET_ACCESS_KEY` (and `S3_ENDPOINT_URL` for R2/MinIO) — builds over
 2 GB are then uploaded to `s3://<bucket>/android/` and the run reports the
 URI.
+
+### Slim builds (game files on the phone)
+
+A zip that contains only `lib/arm64-v8a/libnfsmw.so` builds a **slim
+APK** (a few MB instead of ~2 GB): no game files inside, no 2 GB
+limit, no cinematics decision. The flow:
+
+1. Build the slim APK from a lib-only zip and install it.
+2. Open the launcher: it reports the game files as not found and shows
+   **Import from a folder** / **Import from a zip**.
+3. Copy your game installation to the phone (a folder over cable/MTP, or
+   a zip of it through any messenger/cloud) and pick it in the launcher.
+   A wrapper folder one level deep (the zip of the whole installation
+   directory) is unwrapped automatically.
+4. The import runs with a progress bar, then the launcher offers to start
+   the game.
+
+The importer applies the bundle rules plus platform junk: `[bundle]
+.exclude` from game.toml (`Uninstall`, `Support`, `scripts`, `SAVE`,
+`foobar`, `*.dll`, `*_inst.exe`, `*.txt`, `server.cfg`) and, on top of
+that, Windows executables and code modules (`*.exe`, `*.cxx`), archives
+(`*.zip` `*.7z` ...), OS metadata (`Thumbs.db`, `$RECYCLE.BIN`, ...) and
+top-level readme/manifest files. After the import the launcher sanity
+checks the tree (same eyes as the CI validator: `SOUND/` `TRACKS/`
+`GLOBAL/` present, size plausible) and shows the warnings next to the
+result.
+
+The import is a one-way copy into the app's private storage; the source
+folder/archive on the phone is not touched and is not needed afterwards.
 
 ### Signing
 

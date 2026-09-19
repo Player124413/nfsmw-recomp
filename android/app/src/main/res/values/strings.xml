@@ -28,6 +28,21 @@
     <string name="staging_body">Copying %1$d of %2$d files — %3$s of %4$s</string>
     <string name="staging_failed">Preparing the game files failed</string>
 
+    <!-- Import (slim builds: the game files come from the phone) -->
+    <string name="status_files_missing">Not found — import them from the phone</string>
+    <string name="status_files_imported">Imported — %1$d files · %2$s</string>
+    <string name="import_hint">This build does not include the game files. Copy your game installation to the phone (a folder, or a zip of it) and import it here. Windows executables and the junk excluded by the bundle rules are skipped automatically.</string>
+    <string name="import_folder">Import from a folder</string>
+    <string name="import_zip">Import from a zip</string>
+    <string name="import_prompt_title">Game files not found</string>
+    <string name="import_prompt_body">This build does not include the game files. Copy your game installation to the phone (a folder, or a zip of it) and import it here.</string>
+    <string name="importing_title">Importing game files</string>
+    <string name="importing_body">Copying %1$d of %2$d files — %3$s of %4$s</string>
+    <string name="import_done_title">Game files imported</string>
+    <string name="import_done_body">Copied into the app: %1$d files · %2$s.</string>
+    <string name="import_failed">The import failed</string>
+    <string name="cancel">Cancel</string>
+
     <!-- Settings -->
     <string name="settings_render_scale">Render scale</string>
     <string name="settings_frame_limit">Frame limit</string>

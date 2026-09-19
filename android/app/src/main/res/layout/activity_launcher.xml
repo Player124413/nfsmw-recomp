@@ -102,6 +102,37 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/text"
                 android:textSize="14sp" />
+
+            <LinearLayout
+                android:id="@+id/import_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/import_hint"
+                    android:textColor="@color/text_dim"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/import_folder_button"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/import_folder" />
+
+                <Button
+                    android:id="@+id/import_zip_button"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/import_zip" />
+            </LinearLayout>
         </LinearLayout>
 
         <Button

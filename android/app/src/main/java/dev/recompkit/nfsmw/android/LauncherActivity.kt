@@ -1,22 +1,32 @@
 package dev.recompkit_nfsmw.android
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import dev.recompkit_nfsmw.android.game.AssetStager
 
+private val ZIP_MIME_TYPES = arrayOf(
+    "application/zip", "application/x-zip-compressed", "application/octet-stream", "*/*"
+)
+
 /**
  * The launcher: status of the game library and files, Play, touch controls
- * editor, settings and about. The game itself runs in [GameActivity].
+ * editor, settings and about. In slim builds (no bundled game files) it
+ * also imports the game files from the phone, from a folder or a zip.
+ * The game itself runs in [GameActivity].
  */
 class LauncherActivity : AppCompatActivity() {
 
@@ -25,6 +35,21 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var filesStatus: TextView
     private lateinit var deviceStatus: TextView
     private lateinit var playButton: Button
+    private lateinit var importRow: View
+
+    private val pickFolder: ActivityResultLauncher<Void?> =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            if (uri != null) {
+                runImport { progress -> AssetStager.importFromTree(this, uri, progress) }
+            }
+        }
+
+    private val pickZip: ActivityResultLauncher<Array<String>?> =
+        registerForActivityResult(ActivityResultContracts.OpenDocument(ZIP_MIME_TYPES)) { uri ->
+            if (uri != null) {
+                runImport { progress -> AssetStager.importFromZip(this, uri, progress) }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,12 +60,15 @@ class LauncherActivity : AppCompatActivity() {
         filesStatus = findViewById(R.id.files_status)
         deviceStatus = findViewById(R.id.device_status)
         playButton = findViewById(R.id.play_button)
+        importRow = findViewById(R.id.import_row)
 
         findViewById<Button>(R.id.controls_button).setOnClickListener {
             startActivity(Intent(this, ControlsActivity::class.java))
         }
         findViewById<Button>(R.id.settings_button).setOnClickListener { showSettingsDialog() }
         findViewById<Button>(R.id.about_button).setOnClickListener { showAboutDialog() }
+        findViewById<Button>(R.id.import_folder_button).setOnClickListener { pickFolder.launch(null) }
+        findViewById<Button>(R.id.import_zip_button).setOnClickListener { pickZip.launch(ZIP_MIME_TYPES) }
         playButton.setOnClickListener { onPlay() }
 
         updateStatus()
@@ -64,16 +92,19 @@ class LauncherActivity : AppCompatActivity() {
             getString(R.string.status_binary_missing)
         }
 
-        val staged = AssetStager.stagedReport(this)
+        val stagedRep = AssetStager.stagedReport(this)
         filesStatus.text = when {
-            !BuildInfo.hasAssets -> getString(R.string.status_files_none)
-            staged.ok -> getString(R.string.status_files_staged, BuildInfo.ASSET_COUNT)
-            else -> getString(
-                R.string.status_files_bundled,
-                BuildInfo.ASSET_COUNT,
-                formatMebibytes(BuildInfo.ASSET_BYTES)
-            )
+            stagedRep.ok && BuildInfo.hasAssets ->
+                getString(R.string.status_files_staged, BuildInfo.ASSET_COUNT)
+            stagedRep.ok ->
+                getString(R.string.status_files_imported, stagedRep.fileCount, formatMebibytes(stagedRep.totalBytes))
+            BuildInfo.hasAssets ->
+                getString(R.string.status_files_bundled, BuildInfo.ASSET_COUNT, formatMebibytes(BuildInfo.ASSET_BYTES))
+            else -> getString(R.string.status_files_missing)
         }
+
+        // Import buttons only make sense in slim builds without an import yet.
+        importRow.visibility = if (!stagedRep.ok && !BuildInfo.hasAssets) View.VISIBLE else View.GONE
 
         deviceStatus.text = getString(
             R.string.status_device_value,
@@ -81,7 +112,7 @@ class LauncherActivity : AppCompatActivity() {
             Build.VERSION.RELEASE
         )
 
-        playButton.isEnabled = BuildInfo.hasGame
+        playButton.isEnabled = BuildInfo.hasGame && (BuildInfo.hasAssets || stagedRep.ok)
         playButton.contentDescription = getString(
             if (BuildInfo.hasGame) R.string.cd_play else R.string.cd_play_disabled
         )
@@ -102,11 +133,18 @@ class LauncherActivity : AppCompatActivity() {
                 .show()
             return
         }
-        if (!AssetStager.staged(this)) {
-            stageThenStart()
-        } else {
-            startGame()
+        if (AssetStager.staged(this) || BuildInfo.hasAssets) {
+            if (AssetStager.staged(this)) startGame() else stageThenStart()
+            return
         }
+        // Slim build without an import yet.
+        AlertDialog.Builder(this)
+            .setTitle(R.string.import_prompt_title)
+            .setMessage(R.string.import_prompt_body)
+            .setPositiveButton(R.string.import_folder) { _, _ -> pickFolder.launch(null) }
+            .setNegativeButton(R.string.import_zip) { _, _ -> pickZip.launch(ZIP_MIME_TYPES) }
+            .setNeutralButton(R.string.cancel, null)
+            .show()
     }
 
     /** Copies the bundled game files with a progress dialog, then starts. */
@@ -114,7 +152,11 @@ class LauncherActivity : AppCompatActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_progress, null)
         val bar: ProgressBar = dialogView.findViewById(R.id.progress_bar)
         val text: TextView = dialogView.findViewById(R.id.progress_text)
-        val dialog = AlertDialog.Builder(this).setView(dialogView).setCancelable(false).show()
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.staging_title)
+            .setView(dialogView)
+            .setCancelable(false)
+            .show()
 
         val ui = Handler(Looper.getMainLooper())
         Thread({
@@ -132,6 +174,7 @@ class LauncherActivity : AppCompatActivity() {
             }
             ui.post {
                 dialog.dismiss()
+                updateStatus()
                 if (report.ok) startGame()
                 else {
                     AlertDialog.Builder(this)
@@ -142,6 +185,62 @@ class LauncherActivity : AppCompatActivity() {
                 }
             }
         }, "nfsmw-stager").start()
+    }
+
+    /**
+     * Runs an importer (folder or zip) off the UI thread with a progress
+     * dialog, then reports the result; on success the game can be started
+     * straight from the dialog.
+     */
+    private fun runImport(work: (onProgress: (AssetStager.Progress) -> Unit) -> AssetStager.Report) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_progress, null)
+        val bar: ProgressBar = dialogView.findViewById(R.id.progress_bar)
+        val text: TextView = dialogView.findViewById(R.id.progress_text)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.importing_title)
+            .setView(dialogView)
+            .setCancelable(false)
+            .show()
+
+        val ui = Handler(Looper.getMainLooper())
+        Thread({
+            val report = work { p ->
+                val pct = (p.bytesDone * 1000L / p.bytesTotal.coerceAtLeast(1L)).toInt().coerceIn(0, 1000)
+                ui.post {
+                    bar.max = 1000
+                    bar.progress = pct
+                    text.text = getString(
+                        R.string.importing_body, p.filesDone, p.filesTotal,
+                        formatMebibytes(p.bytesDone), formatMebibytes(p.bytesTotal)
+                    )
+                }
+            }
+            ui.post {
+                dialog.dismiss()
+                updateStatus()
+                if (report.ok) {
+                    val builder = AlertDialog.Builder(this)
+                        .setTitle(R.string.import_done_title)
+                        .setMessage(
+                            getString(R.string.import_done_body, report.fileCount, formatMebibytes(report.totalBytes)) +
+                                if (report.warnings.isNotEmpty()) {
+                                    "\n\n" + report.warnings.joinToString("\n") { "• " + it }
+                                } else ""
+                        )
+                    if (BuildInfo.hasGame) {
+                        builder.setPositiveButton(R.string.play) { _, _ -> startGame() }
+                    }
+                    builder.setNegativeButton(R.string.ok, null)
+                    builder.show()
+                } else {
+                    AlertDialog.Builder(this)
+                        .setTitle(R.string.import_failed)
+                        .setMessage(report.message)
+                        .setPositiveButton(R.string.ok, null)
+                        .show()
+                }
+            }
+        }, "nfsmw-importer").start()
     }
 
     private fun startGame() {

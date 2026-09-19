@@ -38,6 +38,14 @@ It validates the zip, stages it, builds `assembleRelease`, signs it (from
 the repository signing secrets, or the debug key without them) and uploads
 the APK as an artifact — and as a GitHub Release when the run is asked to.
 
+Two flavours of the zip:
+
+- **full** (`--game-dir`): the game files ride inside the APK and are
+  staged on first launch;
+- **slim** (no `--game-dir`, lib only): a few-MB APK; the launcher imports
+  the game files from the phone (a folder or a zip) on first launch — see
+  [../docs/android.md](../docs/android.md), "Slim builds".
+
 ## Layout
 
 | Path | What |
