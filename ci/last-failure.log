@@ -1,5 +1,7 @@
 # Last failed Android build log (auto-updated by CI; safe to delete)
-# run: 35434114199
+# run: 35434427242
+Fetching distribution.
+Downloading https://services.gradle.org/distributions/gradle-8.9-bin.zip
 ............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
 
 Welcome to Gradle 8.9!
@@ -34,19 +36,20 @@ The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml 
 
 > Task :app:processReleaseManifest
 > Task :app:preReleaseUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompileRelease
-> Task :app:processReleaseManifestForPackage
-> Task :app:javaPreCompileReleaseUnitTest
 > Task :app:preDebugBuild UP-TO-DATE
 > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:javaPreCompileRelease
+> Task :app:javaPreCompileReleaseUnitTest
 > Task :app:checkDebugAarMetadata
 > Task :app:generateDebugResValues
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
+> Task :app:processReleaseManifestForPackage
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
 > Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
 
 > Task :app:processDebugMainManifest
 /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/AndroidManifest.xml:10:9-42 Warning:
@@ -54,10 +57,10 @@ The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml 
 The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
 
 > Task :app:processDebugManifest
-> Task :app:processReleaseResources
-> Task :app:mergeDebugResources
-> Task :app:processDebugManifestForPackage
 > Task :app:javaPreCompileDebug
+> Task :app:processDebugManifestForPackage
+> Task :app:processReleaseResources
+> Task :app:processDebugResources
 > Task :app:mergeDebugShaders
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
@@ -66,7 +69,6 @@ The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml 
 > Task :app:desugarDebugFileDependencies
 > Task :app:mergeDebugStartupProfile
 > Task :app:checkDebugDuplicateClasses
-> Task :app:processDebugResources
 
 > Task :app:configureCMakeDebug[arm64-v8a]
 Checking the license for package CMake 3.22.1 in /usr/local/lib/android/sdk/licenses
@@ -77,126 +79,43 @@ Installing CMake 3.22.1 in /usr/local/lib/android/sdk/cmake/3.22.1
 "Install CMake 3.22.1 v.3.22.1" complete.
 "Install CMake 3.22.1 v.3.22.1" finished.
 
-> Task :app:compileReleaseKotlin
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:56:36 The corresponding parameter in the supertype 'GameInput' is named 'pointerId'. This may cause problems when calling this function with named arguments.
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:57:36 The corresponding parameter in the supertype 'GameInput' is named 'pointerId'. This may cause problems when calling this function with named arguments.
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:58:34 The corresponding parameter in the supertype 'GameInput' is named 'pointerId'. This may cause problems when calling this function with named arguments.
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:112:67 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:78:30 Variable 'c' is never used
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:104:27 Variable 'c' is never used
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:123:27 Variable 'c' is never used
-
 > Task :app:compileDebugKotlin
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:56:36 The corresponding parameter in the supertype 'GameInput' is named 'pointerId'. This may cause problems when calling this function with named arguments.
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:57:36 The corresponding parameter in the supertype 'GameInput' is named 'pointerId'. This may cause problems when calling this function with named arguments.
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:58:34 The corresponding parameter in the supertype 'GameInput' is named 'pointerId'. This may cause problems when calling this function with named arguments.
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:112:67 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:78:30 Variable 'c' is never used
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:104:27 Variable 'c' is never used
-w: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:123:27 Variable 'c' is never used
-
+> Task :app:compileReleaseKotlin
 > Task :app:compileReleaseJavaWithJavac NO-SOURCE
-> Task :app:processReleaseJavaRes
-> Task :app:bundleReleaseClassesToCompileJar
 > Task :app:bundleReleaseClassesToRuntimeJar
+> Task :app:bundleReleaseClassesToCompileJar
+> Task :app:processReleaseJavaRes
 > Task :app:compileDebugJavaWithJavac NO-SOURCE
-> Task :app:mergeExtDexDebug
 > Task :app:dexBuilderDebug
 > Task :app:mergeDebugGlobalSynthetics
 > Task :app:processDebugJavaRes
 > Task :app:mergeLibDexDebug
-> Task :app:mergeDebugJavaResource
-> Task :app:mergeProjectDexDebug
+> Task :app:mergeExtDexDebug
 > Task :app:compileReleaseUnitTestKotlin
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:buildCMakeDebug[arm64-v8a]
+> Task :app:compileReleaseUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processReleaseUnitTestJavaRes
 
-> Task :app:buildCMakeDebug[arm64-v8a] FAILED
-C/C++: ninja: Entering directory `/home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/.cxx/Debug/1n4i3b2c/arm64-v8a'
-C/C++: /usr/local/lib/android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/usr/local/lib/android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dnfsbridge_EXPORTS -I/home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -O2 -fvisibility=hidden -fno-limit-debug-info  -fPIC -O2 -fvisibility=hidden -Wall -Wextra -MD -MT CMakeFiles/nfsbridge.dir/bridge.cpp.o -MF CMakeFiles/nfsbridge.dir/bridge.cpp.o.d -o CMakeFiles/nfsbridge.dir/bridge.cpp.o -c /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:66:14: error: static_cast from 'void *' to 'InitFn' (aka 'int (*)(const nfsmw_android_env *, void (*)(int, const char *))') is not allowed
-C/C++:     g_init = static_cast<InitFn>(findSymbol("nfsmw_android_init"));
-C/C++:              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:67:13: error: static_cast from 'void *' to 'KeyFn' (aka 'void (*)(int, int)') is not allowed
-C/C++:     g_key = static_cast<KeyFn>(findSymbol("nfsmw_android_key"));
-C/C++:             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:68:18: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-C/C++:     g_shutdown = static_cast<VoidFn>(findSymbol("nfsmw_android_shutdown"));
-C/C++:                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:69:15: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-C/C++:     g_pause = static_cast<VoidFn>(findSymbol("nfsmw_android_pause"));
-C/C++:               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:70:16: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-C/C++:     g_resume = static_cast<VoidFn>(findSymbol("nfsmw_android_resume"));
-C/C++:                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:71:15: error: static_cast from 'void *' to 'TouchFn' (aka 'void (*)(int, int, float, float)') is not allowed
-C/C++:     g_touch = static_cast<TouchFn>(findSymbol("nfsmw_android_touch"));
-C/C++:               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:72:26: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-C/C++:     g_request_shutdown = static_cast<VoidFn>(findSymbol("nfsmw_android_request_shutdown"));
-C/C++:                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:73:26: error: static_cast from 'void *' to 'ScaleFn' (aka 'void (*)(float)') is not allowed
-C/C++:     g_set_render_scale = static_cast<ScaleFn>(findSymbol("nfsmw_android_set_render_scale"));
-C/C++:                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:74:25: error: static_cast from 'void *' to 'LimitFn' (aka 'void (*)(int)') is not allowed
-C/C++:     g_set_frame_limit = static_cast<LimitFn>(findSymbol("nfsmw_android_set_frame_limit"));
-C/C++:                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:75:16: error: static_cast from 'void *' to 'ResizeFn' (aka 'void (*)(int, int)') is not allowed
-C/C++:     g_resize = static_cast<ResizeFn>(findSymbol("nfsmw_android_resize"));
-C/C++:                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-C/C++: 10 errors generated.
+> Task :app:testReleaseUnitTest FAILED
+
+ControlLayoutTest > hugeButtonCentresOnScreen FAILED
+    java.lang.AssertionError at ControlLayoutTest.kt:40
+
+JsonLiteTest > wholeNumbersStayWhole FAILED
+    java.lang.AssertionError at JsonLiteTest.kt:26
+
+25 tests completed, 2 failed
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:buildCMakeDebug[arm64-v8a]'.
-> com.android.ide.common.process.ProcessException: ninja: Entering directory `/home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/.cxx/Debug/1n4i3b2c/arm64-v8a'
-  [1/2] Building CXX object CMakeFiles/nfsbridge.dir/bridge.cpp.o
-  FAILED: CMakeFiles/nfsbridge.dir/bridge.cpp.o 
-  /usr/local/lib/android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=aarch64-none-linux-android26 --sysroot=/usr/local/lib/android/sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dnfsbridge_EXPORTS -I/home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -O2 -fvisibility=hidden -fno-limit-debug-info  -fPIC -O2 -fvisibility=hidden -Wall -Wextra -MD -MT CMakeFiles/nfsbridge.dir/bridge.cpp.o -MF CMakeFiles/nfsbridge.dir/bridge.cpp.o.d -o CMakeFiles/nfsbridge.dir/bridge.cpp.o -c /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:66:14: error: static_cast from 'void *' to 'InitFn' (aka 'int (*)(const nfsmw_android_env *, void (*)(int, const char *))') is not allowed
-      g_init = static_cast<InitFn>(findSymbol("nfsmw_android_init"));
-               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:67:13: error: static_cast from 'void *' to 'KeyFn' (aka 'void (*)(int, int)') is not allowed
-      g_key = static_cast<KeyFn>(findSymbol("nfsmw_android_key"));
-              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:68:18: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-      g_shutdown = static_cast<VoidFn>(findSymbol("nfsmw_android_shutdown"));
-                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:69:15: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-      g_pause = static_cast<VoidFn>(findSymbol("nfsmw_android_pause"));
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:70:16: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-      g_resume = static_cast<VoidFn>(findSymbol("nfsmw_android_resume"));
-                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:71:15: error: static_cast from 'void *' to 'TouchFn' (aka 'void (*)(int, int, float, float)') is not allowed
-      g_touch = static_cast<TouchFn>(findSymbol("nfsmw_android_touch"));
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:72:26: error: static_cast from 'void *' to 'VoidFn' (aka 'void (*)()') is not allowed
-      g_request_shutdown = static_cast<VoidFn>(findSymbol("nfsmw_android_request_shutdown"));
-                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:73:26: error: static_cast from 'void *' to 'ScaleFn' (aka 'void (*)(float)') is not allowed
-      g_set_render_scale = static_cast<ScaleFn>(findSymbol("nfsmw_android_set_render_scale"));
-                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:74:25: error: static_cast from 'void *' to 'LimitFn' (aka 'void (*)(int)') is not allowed
-      g_set_frame_limit = static_cast<LimitFn>(findSymbol("nfsmw_android_set_frame_limit"));
-                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/cpp/bridge.cpp:75:16: error: static_cast from 'void *' to 'ResizeFn' (aka 'void (*)(int, int)') is not allowed
-      g_resize = static_cast<ResizeFn>(findSymbol("nfsmw_android_resize"));
-                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  10 errors generated.
-  ninja: build stopped: subcommand failed.
-  
-  C++ build system [build] failed while executing:
-      /usr/local/lib/android/sdk/cmake/3.22.1/bin/ninja \
-        -C \
-        /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/.cxx/Debug/1n4i3b2c/arm64-v8a \
-        nfsbridge
-    from /home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app
+Execution failed for task ':app:testReleaseUnitTest'.
+> There were failing tests. See the report at: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/build/reports/tests/testReleaseUnitTest/index.html
 
 * Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
 > Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
 
-BUILD FAILED in 1m 48s
-52 actionable tasks: 52 executed
+BUILD FAILED in 1m 32s
+54 actionable tasks: 54 executed
