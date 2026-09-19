@@ -479,6 +479,9 @@ entry_points = [
   0x00889f60,
   0x007cd5e4,  # an SEH handler; without it a fault the game handles itself
                # reached the dispatcher as ExceptionContinueExecution
+  0x00693be0,  # both called from ordinary code with a heap object in ECX,
+  0x006a0430,  # and undeliverable in every run of 2026-09-19
+  0x00685810,  # and this one behind them, once they could be delivered
 
   # The blocks main's recovery does not reach that the translator this port
   # was built on did. None is named by the listing: every one is recovered
