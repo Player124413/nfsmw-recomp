@@ -102,16 +102,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # The runner wraps this with -eo pipefail; a failing command
-          # substitution (git show on a missing ref) would kill the step,
-          # so turn -e/-u off and handle every error explicitly.
-          # The runner wraps this with -eo pipefail; a failing command
-          # substitution (git show on a missing ref) would kill the step,
-          # so turn -e/-u off and handle every error explicitly. The step
-          # always leaves a ::notice:: annotation so the path taken is
-          # visible in the run's annotations.
+          # The runner wraps this with -eo pipefail; turn -e/-u off and
+          # handle every error explicitly. The step always leaves a
+          # ::notice:: annotation so the path taken is visible in the run.
+          # The log is committed through the Contents API: a git push from
+          # the detached checkout kept dying in the rebase step, while the
+          # API creates the commit server-side and cannot conflict.
           set +eu -o pipefail
-          note() { echo "notice::failure-log: $*" >> "$GITHUB_STEP_SUMMARY"; echo "::notice::$*"; }
+          note() { echo "::notice::failure-log: $*"; }
           LOG="$RUNNER_TEMP/build.log"
           if [ ! -s "$LOG" ]; then
             note "no log to commit (build.log missing/empty)"
@@ -123,29 +121,17 @@ jobs:
             echo "# run: $GITHUB_RUN_ID"
             tail -n 200 "$LOG"
           } > ci/last-failure.log
-          # Identical failures must not retrigger forever: compare without
-          # the run-id line.
-          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:' || true)
-          next=$(grep -v '^# run:' ci/last-failure.log || true)
-          if [ -n "$current" ] && [ "$current" = "$next" ]; then
-            note "failure log unchanged - not pushing"
+          # Identical failures must not retrigger forever: the helper
+          # compares against what is on the branch (the run-id line is
+          # excluded from the comparison). The python source is embedded
+          # as base64 to keep this block scalar indentation-safe.
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          if ! BRANCH="$BRANCH" GH_TOKEN="$GITHUB_TOKEN" python3 -c "$(echo 'aW1wb3J0IGJhc2U2NCwganNvbiwgb3MsIHVybGxpYi5lcnJvciwgdXJsbGliLnJlcXVlc3QKYnJhbmNoID0gb3MuZW52aXJvblsiQlJBTkNIIl0KdG9rZW4gPSBvcy5lbnZpcm9uWyJHSF9UT0tFTiJdCnJlcG8gPSBvcy5lbnZpcm9uWyJHSVRIVUJfUkVQT1NJVE9SWSJdCmFwaSA9ICJodHRwczovL2FwaS5naXRodWIuY29tL3JlcG9zLyIgKyByZXBvICsgIi9jb250ZW50cy9jaS9sYXN0LWZhaWx1cmUubG9nIgpoZWFkZXJzID0geyJBdXRob3JpemF0aW9uIjogIkJlYXJlciAiICsgdG9rZW4sICJBY2NlcHQiOiAiYXBwbGljYXRpb24vdm5kLmdpdGh1Yitqc29uIn0KbmV3ID0gYmFzZTY0LmI2NGVuY29kZShvcGVuKCJjaS9sYXN0LWZhaWx1cmUubG9nIiwgInJiIikucmVhZCgpKS5kZWNvZGUoKQpzaGEgPSBOb25lCnRyeToKICAgIHJlcSA9IHVybGxpYi5yZXF1ZXN0LlJlcXVlc3QoYXBpICsgIj9yZWY9IiArIGJyYW5jaCwgaGVhZGVycz1oZWFkZXJzKQogICAgZGF0YSA9IGpzb24ubG9hZCh1cmxsaWIucmVxdWVzdC51cmxvcGVuKHJlcSkpCiAgICBzaGEgPSBkYXRhLmdldCgic2hhIikKICAgIG9sZCA9IGJhc2U2NC5iNjRkZWNvZGUoZGF0YS5nZXQoImNvbnRlbnQiLCAiIikpLmRlY29kZShlcnJvcnM9InJlcGxhY2UiKQogICAgc3RyaXAgPSBsYW1iZGEgczogW2wgZm9yIGwgaW4gcy5zcGxpdGxpbmVzKCkgaWYgbm90IGwuc3RhcnRzd2l0aCgiIyBydW46IildCiAgICBpZiBzdHJpcChvbGQpID09IHN0cmlwKG5ldy5kZWNvZGUoKSk6CiAgICAgICAgcHJpbnQoInVuY2hhbmdlZCIpCiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdCgwKQpleGNlcHQgU3lzdGVtRXhpdDoKICAgIHJhaXNlCmV4Y2VwdCBFeGNlcHRpb246CiAgICBwYXNzCmJvZHkgPSBqc29uLmR1bXBzKHsibWVzc2FnZSI6ICJjaTogQW5kcm9pZCBidWlsZCBmYWlsdXJlIGxvZyIsCiAgICAgICAgICAgICAgICAgICAiY29udGVudCI6IG5ldywgImJyYW5jaCI6IGJyYW5jaCwKICAgICAgICAgICAgICAgICAgICoqKHsic2hhIjogc2hhfSBpZiBzaGEgZWxzZSB7fSl9KS5lbmNvZGUoKQpyZXEgPSB1cmxsaWIucmVxdWVzdC5SZXF1ZXN0KGFwaSwgZGF0YT1ib2R5LAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGhlYWRlcnM9ZGljdChoZWFkZXJzLCAqKnsiQ29udGVudC1UeXBlIjogImFwcGxpY2F0aW9uL2pzb24ifSksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbWV0aG9kPSJQVVQiKQp0cnk6CiAgICByZXNwID0ganNvbi5sb2FkKHVybGxpYi5yZXF1ZXN0LnVybG9wZW4ocmVxKSkKICAgIHByaW50KCJwdXNoZWQiLCByZXNwWyJjb21taXQiXVsic2hhIl1bOjhdKQpleGNlcHQgdXJsbGliLmVycm9yLkhUVFBFcnJvciBhcyBlOgogICAgcHJpbnQoImFwaS1lcnJvciIsIGUuY29kZSwgZS5yZWFkKClbOjMwMF0uZGVjb2RlKGVycm9ycz0icmVwbGFjZSIpKQo=' | base64 -d)"; then
+            note "log upload script failed"
             exit 0
           fi
-          git config user.name "arena-ai-coding-agent"
-          git config user.email "arena-ai-coding-agent@users.noreply.github.com"
-          if ! git add -f ci/last-failure.log; then   # -f: the repo ignores *.log
-            note "git add failed"; exit 0
-          fi
-          if ! git commit -m "ci: Android build failure log"; then
-            note "git commit failed (nothing to commit?)"; exit 0
-          fi
-          if ! git pull --rebase origin "$GITHUB_REF"; then
-            note "git pull --rebase failed"; exit 0
-          fi
-          if ! git push origin "HEAD:$GITHUB_REF"; then
-            note "git push failed"; exit 0
-          fi
-          note "committed and pushed $(git rev-parse --short HEAD)"
+          note "log uploaded to ci/last-failure.log"
+
 
       - name: Lint (report only)
         working-directory: android
@@ -259,16 +245,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # The runner wraps this with -eo pipefail; a failing command
-          # substitution (git show on a missing ref) would kill the step,
-          # so turn -e/-u off and handle every error explicitly.
-          # The runner wraps this with -eo pipefail; a failing command
-          # substitution (git show on a missing ref) would kill the step,
-          # so turn -e/-u off and handle every error explicitly. The step
-          # always leaves a ::notice:: annotation so the path taken is
-          # visible in the run's annotations.
+          # The runner wraps this with -eo pipefail; turn -e/-u off and
+          # handle every error explicitly. The step always leaves a
+          # ::notice:: annotation so the path taken is visible in the run.
+          # The log is committed through the Contents API: a git push from
+          # the detached checkout kept dying in the rebase step, while the
+          # API creates the commit server-side and cannot conflict.
           set +eu -o pipefail
-          note() { echo "notice::failure-log: $*" >> "$GITHUB_STEP_SUMMARY"; echo "::notice::$*"; }
+          note() { echo "::notice::failure-log: $*"; }
           LOG="$RUNNER_TEMP/build.log"
           if [ ! -s "$LOG" ]; then
             note "no log to commit (build.log missing/empty)"
@@ -280,29 +264,17 @@ jobs:
             echo "# run: $GITHUB_RUN_ID"
             tail -n 200 "$LOG"
           } > ci/last-failure.log
-          # Identical failures must not retrigger forever: compare without
-          # the run-id line.
-          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:' || true)
-          next=$(grep -v '^# run:' ci/last-failure.log || true)
-          if [ -n "$current" ] && [ "$current" = "$next" ]; then
-            note "failure log unchanged - not pushing"
+          # Identical failures must not retrigger forever: the helper
+          # compares against what is on the branch (the run-id line is
+          # excluded from the comparison). The python source is embedded
+          # as base64 to keep this block scalar indentation-safe.
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          if ! BRANCH="$BRANCH" GH_TOKEN="$GITHUB_TOKEN" python3 -c "$(echo 'aW1wb3J0IGJhc2U2NCwganNvbiwgb3MsIHVybGxpYi5lcnJvciwgdXJsbGliLnJlcXVlc3QKYnJhbmNoID0gb3MuZW52aXJvblsiQlJBTkNIIl0KdG9rZW4gPSBvcy5lbnZpcm9uWyJHSF9UT0tFTiJdCnJlcG8gPSBvcy5lbnZpcm9uWyJHSVRIVUJfUkVQT1NJVE9SWSJdCmFwaSA9ICJodHRwczovL2FwaS5naXRodWIuY29tL3JlcG9zLyIgKyByZXBvICsgIi9jb250ZW50cy9jaS9sYXN0LWZhaWx1cmUubG9nIgpoZWFkZXJzID0geyJBdXRob3JpemF0aW9uIjogIkJlYXJlciAiICsgdG9rZW4sICJBY2NlcHQiOiAiYXBwbGljYXRpb24vdm5kLmdpdGh1Yitqc29uIn0KbmV3ID0gYmFzZTY0LmI2NGVuY29kZShvcGVuKCJjaS9sYXN0LWZhaWx1cmUubG9nIiwgInJiIikucmVhZCgpKS5kZWNvZGUoKQpzaGEgPSBOb25lCnRyeToKICAgIHJlcSA9IHVybGxpYi5yZXF1ZXN0LlJlcXVlc3QoYXBpICsgIj9yZWY9IiArIGJyYW5jaCwgaGVhZGVycz1oZWFkZXJzKQogICAgZGF0YSA9IGpzb24ubG9hZCh1cmxsaWIucmVxdWVzdC51cmxvcGVuKHJlcSkpCiAgICBzaGEgPSBkYXRhLmdldCgic2hhIikKICAgIG9sZCA9IGJhc2U2NC5iNjRkZWNvZGUoZGF0YS5nZXQoImNvbnRlbnQiLCAiIikpLmRlY29kZShlcnJvcnM9InJlcGxhY2UiKQogICAgc3RyaXAgPSBsYW1iZGEgczogW2wgZm9yIGwgaW4gcy5zcGxpdGxpbmVzKCkgaWYgbm90IGwuc3RhcnRzd2l0aCgiIyBydW46IildCiAgICBpZiBzdHJpcChvbGQpID09IHN0cmlwKG5ldy5kZWNvZGUoKSk6CiAgICAgICAgcHJpbnQoInVuY2hhbmdlZCIpCiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdCgwKQpleGNlcHQgU3lzdGVtRXhpdDoKICAgIHJhaXNlCmV4Y2VwdCBFeGNlcHRpb246CiAgICBwYXNzCmJvZHkgPSBqc29uLmR1bXBzKHsibWVzc2FnZSI6ICJjaTogQW5kcm9pZCBidWlsZCBmYWlsdXJlIGxvZyIsCiAgICAgICAgICAgICAgICAgICAiY29udGVudCI6IG5ldywgImJyYW5jaCI6IGJyYW5jaCwKICAgICAgICAgICAgICAgICAgICoqKHsic2hhIjogc2hhfSBpZiBzaGEgZWxzZSB7fSl9KS5lbmNvZGUoKQpyZXEgPSB1cmxsaWIucmVxdWVzdC5SZXF1ZXN0KGFwaSwgZGF0YT1ib2R5LAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGhlYWRlcnM9ZGljdChoZWFkZXJzLCAqKnsiQ29udGVudC1UeXBlIjogImFwcGxpY2F0aW9uL2pzb24ifSksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbWV0aG9kPSJQVVQiKQp0cnk6CiAgICByZXNwID0ganNvbi5sb2FkKHVybGxpYi5yZXF1ZXN0LnVybG9wZW4ocmVxKSkKICAgIHByaW50KCJwdXNoZWQiLCByZXNwWyJjb21taXQiXVsic2hhIl1bOjhdKQpleGNlcHQgdXJsbGliLmVycm9yLkhUVFBFcnJvciBhcyBlOgogICAgcHJpbnQoImFwaS1lcnJvciIsIGUuY29kZSwgZS5yZWFkKClbOjMwMF0uZGVjb2RlKGVycm9ycz0icmVwbGFjZSIpKQo=' | base64 -d)"; then
+            note "log upload script failed"
             exit 0
           fi
-          git config user.name "arena-ai-coding-agent"
-          git config user.email "arena-ai-coding-agent@users.noreply.github.com"
-          if ! git add -f ci/last-failure.log; then   # -f: the repo ignores *.log
-            note "git add failed"; exit 0
-          fi
-          if ! git commit -m "ci: Android build failure log"; then
-            note "git commit failed (nothing to commit?)"; exit 0
-          fi
-          if ! git pull --rebase origin "$GITHUB_REF"; then
-            note "git pull --rebase failed"; exit 0
-          fi
-          if ! git push origin "HEAD:$GITHUB_REF"; then
-            note "git push failed"; exit 0
-          fi
-          note "committed and pushed $(git rev-parse --short HEAD)"
+          note "log uploaded to ci/last-failure.log"
+
 
       - name: Name the APK
         id: apk
