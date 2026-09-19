@@ -43,14 +43,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
+      # Google removed the legacy "tools" SDK package in 2025; the action's
+      # default package list still names it and would fail the step.
       - uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+          packages: platform-tools
+
+      - name: Install the SDK packages the build needs
+        run: |
+          sdkmanager --install \
+            "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125" > /dev/null
 
       - name: Gradle cache
         uses: actions/cache@v4
@@ -108,14 +116,22 @@ jobs:
             --source-url "$ZIP_URL" \
             --built-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
+      # Google removed the legacy "tools" SDK package in 2025; the action's
+      # default package list still names it and would fail the step.
       - uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+          packages: platform-tools
+
+      - name: Install the SDK packages the build needs
+        run: |
+          sdkmanager --install \
+            "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125" > /dev/null
 
       # GitHub Actions does not allow the secrets context inside if:
       # expressions, so the "is a key configured" test happens in the shell.
