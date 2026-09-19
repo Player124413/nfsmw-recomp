@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
 import dev.recompkit_nfsmw.android.R
 import dev.recompkit_nfsmw.android.game.GameCodes
 import dev.recompkit_nfsmw.android.layout.ButtonId
@@ -127,7 +128,7 @@ class TouchControlsOverlay @JvmOverloads constructor(
     private fun iconFor(id: ButtonId): Drawable {
         var d = iconCache[id]
         if (d == null) {
-            d = context.getDrawable(iconResFor(id), context.theme)!!.mutate()
+            d = ContextCompat.getDrawable(context, iconResFor(id))!!.mutate()
             iconCache[id] = d
         }
         return d
@@ -334,7 +335,7 @@ class TouchControlsOverlay @JvmOverloads constructor(
 
             fill.color = Color.argb((alpha * 255).toInt(), 24, 28, 36)
             canvas.drawCircle(cx, cy, r, fill)
-            stroke.color = Color.argb((if (isPressed) 0.9f else 0.4f) * 255, 255, 255, 255)
+            stroke.color = Color.argb(((if (isPressed) 0.9f else 0.4f) * 255).toInt(), 255, 255, 255)
             canvas.drawCircle(cx, cy, r - 1f, stroke)
             if (isSelected) {
                 ring.color = Color.rgb(230, 57, 70)

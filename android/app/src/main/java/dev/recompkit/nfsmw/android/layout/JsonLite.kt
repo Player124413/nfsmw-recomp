@@ -144,7 +144,7 @@ object JsonLite {
                             '\\' -> sb.append('\\')
                             '/' -> sb.append('/')
                             'b' -> sb.append('\b')
-                            'f' -> sb.append('\f')
+                            'f' -> sb.append('\u000C')
                             'n' -> sb.append('\n')
                             'r' -> sb.append('\r')
                             't' -> sb.append('\t')
@@ -203,7 +203,7 @@ object JsonLite {
             }
             is JsonValue.Obj -> {
                 sb.append('{')
-                entries.forEachIndexed { idx, (k, v) ->
+                entries.entries.forEachIndexed { idx, (k, v) ->
                     if (idx > 0) sb.append(',')
                     appendString(sb, k)
                     sb.append(':')
@@ -224,7 +224,7 @@ object JsonLite {
                 '\r' -> sb.append("\\r")
                 '\t' -> sb.append("\\t")
                 '\b' -> sb.append("\\b")
-                '\f' -> sb.append("\\f")
+                '\u000C' -> sb.append("\\f")
                 else -> if (c.code < 0x20) sb.append(String.format("\\u%04x", c.code)) else sb.append(c)
             }
         }

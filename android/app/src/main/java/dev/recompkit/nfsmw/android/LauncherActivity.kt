@@ -13,7 +13,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import dev.recompkit_nfsmw.android.game.AssetStager
-import dev.recompkit_nfsmw.android.game.GameActivity
 
 /**
  * The launcher: status of the game library and files, Play, touch controls

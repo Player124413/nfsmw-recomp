@@ -9,9 +9,9 @@ import java.io.File
 import java.io.IOException
 
 /**
- * Copies the bundled game files (assets/game/**) into files/game/ on first
- * launch, once per build (the CI manifest in BuildInfo identifies the tree).
- * The game gets the absolute path of files/game/ at init.
+ * Copies the bundled game files (everything under assets/game/) into
+ * files/game/ on first launch, once per build (the CI manifest in BuildInfo
+ * identifies the tree). The game gets the absolute path of files/game/ at init.
  */
 object AssetStager {
 

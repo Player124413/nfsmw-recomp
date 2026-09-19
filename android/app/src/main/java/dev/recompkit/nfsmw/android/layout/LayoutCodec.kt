@@ -29,7 +29,7 @@ object LayoutCodec {
         return JsonLite.encode(
             JsonLite.obj(
                 "version" to JsonLite.num(layout.version.toDouble()),
-                "buttons" to JsonLite.obj(btns.toTypedArray())
+                "buttons" to JsonLite.obj(btns.entries.toTypedArray())
             )
         )
     }

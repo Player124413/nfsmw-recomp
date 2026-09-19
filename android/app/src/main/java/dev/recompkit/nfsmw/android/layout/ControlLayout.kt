@@ -64,26 +64,26 @@ class ControlLayout(
             def(ButtonId.MENU, 0.84f, 0.10f, 76)
             return ControlLayout(LAYOUT_VERSION, m)
         }
-
-        /** A copy with every button clamped inside the screen. */
-        fun clampAll(widthPx: Int, heightPx: Int, density: Float): ControlLayout {
-            if (widthPx <= 0 || heightPx <= 0) return this
-            val m = LinkedHashMap<ButtonId, ControlButton>()
-            for ((id, b) in buttons) {
-                val size = b.sizeDp.coerceIn(MIN_SIZE_DP, MAX_SIZE_DP)
-                val rPx = size * density / 2f
-                val margin = 4f * density
-                m[id] = b.copy(
-                    x = coerceCenter(b.x * widthPx, rPx + margin, widthPx - rPx - margin) / widthPx,
-                    y = coerceCenter(b.y * heightPx, rPx + margin, heightPx - rPx - margin) / heightPx,
-                    sizeDp = size
-                )
-            }
-            return ControlLayout(version, m)
-        }
-
-        /** Like [coerceIn], but a button bigger than the screen lands in the middle. */
-        private fun coerceCenter(value: Float, min: Float, max: Float): Float =
-            if (min >= max) (min + max) / 2f else value.coerceIn(min, max)
     }
+
+    /** A copy with every button clamped inside the screen. */
+    fun clampAll(widthPx: Int, heightPx: Int, density: Float): ControlLayout {
+        if (widthPx <= 0 || heightPx <= 0) return this
+        val m = LinkedHashMap<ButtonId, ControlButton>()
+        for ((id, b) in buttons) {
+            val size = b.sizeDp.coerceIn(MIN_SIZE_DP, MAX_SIZE_DP)
+            val rPx = size * density / 2f
+            val margin = 4f * density
+            m[id] = b.copy(
+                x = coerceCenter(b.x * widthPx, rPx + margin, widthPx - rPx - margin) / widthPx,
+                y = coerceCenter(b.y * heightPx, rPx + margin, heightPx - rPx - margin) / heightPx,
+                sizeDp = size
+            )
+        }
+        return ControlLayout(version, m)
+    }
+
+    /** Like [coerceIn], but a button bigger than the screen lands in the middle. */
+    private fun coerceCenter(value: Float, min: Float, max: Float): Float =
+        if (min >= max) (min + max) / 2f else value.coerceIn(min, max)
 }
