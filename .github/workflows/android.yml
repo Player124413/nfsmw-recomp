@@ -70,7 +70,22 @@ jobs:
 
       - name: Generate the Gradle wrapper
         working-directory: android
-        run: gradle wrapper --gradle-version 8.9 --no-daemon
+        run: |
+          # The runner image's system gradle comes and goes, so fall back
+          # to a bootstrapped Gradle 8.9 when it is missing or broken.
+          if [ ! -x ./gradlew ]; then
+            if ! gradle wrapper --gradle-version 8.9 --no-daemon 2>&1 | tee "$RUNNER_TEMP/wrapper.log"; then
+              {
+                echo "### Wrapper step: system gradle failed - bootstrapping Gradle 8.9"
+                tail -n 40 "$RUNNER_TEMP/wrapper.log"
+              } >> "$GITHUB_STEP_SUMMARY"
+              curl -fsSL -o /tmp/gradle-8.9.zip \
+                   https://services.gradle.org/distributions/gradle-8.9-bin.zip
+              unzip -q /tmp/gradle-8.9.zip -d /opt
+              /opt/gradle-8.9/bin/gradle wrapper --gradle-version 8.9 --no-daemon
+            fi
+          fi
+          test -x ./gradlew
 
       - name: Unit tests and a full build (debug + release)
         working-directory: android
@@ -217,7 +232,22 @@ jobs:
 
       - name: Generate the Gradle wrapper
         working-directory: android
-        run: gradle wrapper --gradle-version 8.9 --no-daemon
+        run: |
+          # The runner image's system gradle comes and goes, so fall back
+          # to a bootstrapped Gradle 8.9 when it is missing or broken.
+          if [ ! -x ./gradlew ]; then
+            if ! gradle wrapper --gradle-version 8.9 --no-daemon 2>&1 | tee "$RUNNER_TEMP/wrapper.log"; then
+              {
+                echo "### Wrapper step: system gradle failed - bootstrapping Gradle 8.9"
+                tail -n 40 "$RUNNER_TEMP/wrapper.log"
+              } >> "$GITHUB_STEP_SUMMARY"
+              curl -fsSL -o /tmp/gradle-8.9.zip \
+                   https://services.gradle.org/distributions/gradle-8.9-bin.zip
+              unzip -q /tmp/gradle-8.9.zip -d /opt
+              /opt/gradle-8.9/bin/gradle wrapper --gradle-version 8.9 --no-daemon
+            fi
+          fi
+          test -x ./gradlew
 
       - name: Build the release APK
         working-directory: android
