@@ -1,6 +1,65 @@
 # Last failed Android build log (auto-updated by CI; safe to delete)
-# run: 35433357196
+# run: 35433610098
+Fetching distribution.
+Downloading https://services.gradle.org/distributions/gradle-8.9-bin.zip
+............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.9!
+
+Here are the highlights of this release:
+ - Enhanced Error and Warning Messages
+ - IDE Integration Improvements
+ - Daemon JVM Information
+
+For more details see https://docs.gradle.org/8.9/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:buildKotlinToolingMetadata
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:generateReleaseResValues
+> Task :app:checkReleaseAarMetadata
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources
+> Task :app:packageReleaseResources
+> Task :app:mergeReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :app:parseReleaseLocalResources
+
+> Task :app:processReleaseMainManifest
+/home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/AndroidManifest.xml:10:9-42 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:processReleaseManifest
+> Task :app:preReleaseUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileRelease
+> Task :app:processReleaseManifestForPackage
+> Task :app:javaPreCompileReleaseUnitTest
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkDebugAarMetadata
+> Task :app:generateDebugResValues
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:parseDebugLocalResources
+> Task :app:extractDeepLinksDebug
+> Task :app:processReleaseResources
+
+> Task :app:processDebugMainManifest
+/home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/AndroidManifest.xml:10:9-42 Warning:
+	android:extractNativeLibs should not be specified in this source AndroidManifest.xml file. See https://d.android.com/guide/topics/manifest/application-element#extractNativeLibs for more information.
+The AGP Upgrade Assistant can remove the attribute from the AndroidManifest.xml file and update the build file accordingly. See https://d.android.com/studio/build/agp-upgrade-assistant for more information.
+
+> Task :app:mergeDebugResources
+> Task :app:processDebugManifest
 > Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
 > Task :app:mergeDebugShaders
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
@@ -8,163 +67,18 @@
 > Task :app:compressDebugAssets
 > Task :app:desugarDebugFileDependencies
 > Task :app:processDebugResources
-> Task :app:processReleaseResources
 > Task :app:checkDebugDuplicateClasses
 > Task :app:mergeDebugStartupProfile
 
-> Task :app:compileReleaseKotlin
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:46 Unresolved reference: width
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:68 Unresolved reference: height
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:15:41 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:16:41 Unresolved reference: GameActivity
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:68:22 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:106:14 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:122:26 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:122:52 Cannot infer a type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/EditPanel.kt:44:55 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/EditPanel.kt:61:40 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:113:25 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:130:53 Too many arguments for public final fun getDrawable(p0: Int): Drawable? defined in android.content.Context
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:250:45 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:264:45 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:337:34 None of the following functions can be called with the arguments supplied: 
-public open fun argb(p0: Float, p1: Float, p2: Float, p3: Float): Int defined in android.graphics.Color
-public open fun argb(p0: Int, p1: Int, p2: Int, p3: Int): Int defined in android.graphics.Color
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/game/AssetStager.kt:128:1 Unclosed comment
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:70:55 Type mismatch: inferred type is ControlLayout.Companion but ControlLayout was expected
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:72:29 Unresolved reference: buttons
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:77:75 Overload resolution ambiguity: 
-public final operator fun minus(other: Byte): Int defined in kotlin.Int
-public final operator fun minus(other: Double): Double defined in kotlin.Int
-public final operator fun minus(other: Float): Float defined in kotlin.Int
-public final operator fun minus(other: Int): Int defined in kotlin.Int
-public final operator fun minus(other: Long): Long defined in kotlin.Int
-public final operator fun minus(other: Short): Int defined in kotlin.Int
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:78:77 Overload resolution ambiguity: 
-public final operator fun minus(other: Byte): Int defined in kotlin.Int
-public final operator fun minus(other: Double): Double defined in kotlin.Int
-public final operator fun minus(other: Float): Float defined in kotlin.Int
-public final operator fun minus(other: Int): Int defined in kotlin.Int
-public final operator fun minus(other: Long): Long defined in kotlin.Int
-public final operator fun minus(other: Short): Int defined in kotlin.Int
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:82:34 Unresolved reference: version
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlStore.kt:14:49 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:147:47 Illegal escape: ''\f''
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:206:25 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
-public inline fun <T> Array<out TypeVariable(T)>.forEachIndexed(action: (index: Int, TypeVariable(T)) -> Unit): Unit defined in kotlin.collections
-public inline fun BooleanArray.forEachIndexed(action: (index: Int, Boolean) -> Unit): Unit defined in kotlin.collections
-public inline fun ByteArray.forEachIndexed(action: (index: Int, Byte) -> Unit): Unit defined in kotlin.collections
-public inline fun CharArray.forEachIndexed(action: (index: Int, Char) -> Unit): Unit defined in kotlin.collections
-public inline fun CharSequence.forEachIndexed(action: (index: Int, Char) -> Unit): Unit defined in kotlin.text
-public inline fun DoubleArray.forEachIndexed(action: (index: Int, Double) -> Unit): Unit defined in kotlin.collections
-public inline fun FloatArray.forEachIndexed(action: (index: Int, Float) -> Unit): Unit defined in kotlin.collections
-public inline fun IntArray.forEachIndexed(action: (index: Int, Int) -> Unit): Unit defined in kotlin.collections
-public inline fun LongArray.forEachIndexed(action: (index: Int, Long) -> Unit): Unit defined in kotlin.collections
-public inline fun ShortArray.forEachIndexed(action: (index: Int, Short) -> Unit): Unit defined in kotlin.collections
-public inline fun UByteArray.forEachIndexed(action: (index: Int, UByte) -> Unit): Unit defined in kotlin.collections
-public inline fun UIntArray.forEachIndexed(action: (index: Int, UInt) -> Unit): Unit defined in kotlin.collections
-public inline fun ULongArray.forEachIndexed(action: (index: Int, ULong) -> Unit): Unit defined in kotlin.collections
-public inline fun UShortArray.forEachIndexed(action: (index: Int, UShort) -> Unit): Unit defined in kotlin.collections
-public inline fun <T> Iterable<TypeVariable(T)>.forEachIndexed(action: (index: Int, TypeVariable(T)) -> Unit): Unit defined in kotlin.collections
-public inline fun <T> Sequence<TypeVariable(T)>.forEachIndexed(action: (index: Int, TypeVariable(T)) -> Unit): Unit defined in kotlin.sequences
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:206:42 Cannot infer a type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:206:47 Cannot infer a type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:227:18 Illegal escape: ''\f''
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:32:48 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
-public fun BooleanArray.toTypedArray(): Array<Boolean> defined in kotlin.collections
-public fun ByteArray.toTypedArray(): Array<Byte> defined in kotlin.collections
-public fun CharArray.toTypedArray(): Array<Char> defined in kotlin.collections
-public fun DoubleArray.toTypedArray(): Array<Double> defined in kotlin.collections
-public fun FloatArray.toTypedArray(): Array<Float> defined in kotlin.collections
-public fun IntArray.toTypedArray(): Array<Int> defined in kotlin.collections
-public fun LongArray.toTypedArray(): Array<Long> defined in kotlin.collections
-public fun ShortArray.toTypedArray(): Array<Short> defined in kotlin.collections
-public fun UByteArray.toTypedArray(): Array<UByte> defined in kotlin.collections
-public fun UIntArray.toTypedArray(): Array<UInt> defined in kotlin.collections
-public fun ULongArray.toTypedArray(): Array<ULong> defined in kotlin.collections
-public fun UShortArray.toTypedArray(): Array<UShort> defined in kotlin.collections
-public inline fun <reified T> Collection<TypeVariable(T)>.toTypedArray(): Array<TypeVariable(T)> defined in kotlin.collections
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:41:25 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:43:61 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:64:42 Unresolved reference: clampAll
+> Task :app:compileDebugKotlin FAILED
+e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:38 Unresolved reference: width
+e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:52 Unresolved reference: height
+e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:32:43 Type mismatch: inferred type is Array<MutableMap.MutableEntry<String, JsonValue>> but Pair<String, JsonValue> was expected
 
 > Task :app:compileReleaseKotlin FAILED
-
-> Task :app:compileDebugKotlin FAILED
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:46 Unresolved reference: width
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:68 Unresolved reference: height
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:15:41 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:16:41 Unresolved reference: GameActivity
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:68:22 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:106:14 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:122:26 Unresolved reference: AssetStager
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/LauncherActivity.kt:122:52 Cannot infer a type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/EditPanel.kt:44:55 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/EditPanel.kt:61:40 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:113:25 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:130:53 Too many arguments for public final fun getDrawable(p0: Int): Drawable? defined in android.content.Context
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:250:45 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:264:45 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/controls/TouchControlsOverlay.kt:337:34 None of the following functions can be called with the arguments supplied: 
-public open fun argb(p0: Float, p1: Float, p2: Float, p3: Float): Int defined in android.graphics.Color
-public open fun argb(p0: Int, p1: Int, p2: Int, p3: Int): Int defined in android.graphics.Color
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/game/AssetStager.kt:128:1 Unclosed comment
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:70:55 Type mismatch: inferred type is ControlLayout.Companion but ControlLayout was expected
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:72:29 Unresolved reference: buttons
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:77:75 Overload resolution ambiguity: 
-public final operator fun minus(other: Byte): Int defined in kotlin.Int
-public final operator fun minus(other: Double): Double defined in kotlin.Int
-public final operator fun minus(other: Float): Float defined in kotlin.Int
-public final operator fun minus(other: Int): Int defined in kotlin.Int
-public final operator fun minus(other: Long): Long defined in kotlin.Int
-public final operator fun minus(other: Short): Int defined in kotlin.Int
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:78:77 Overload resolution ambiguity: 
-public final operator fun minus(other: Byte): Int defined in kotlin.Int
-public final operator fun minus(other: Double): Double defined in kotlin.Int
-public final operator fun minus(other: Float): Float defined in kotlin.Int
-public final operator fun minus(other: Int): Int defined in kotlin.Int
-public final operator fun minus(other: Long): Long defined in kotlin.Int
-public final operator fun minus(other: Short): Int defined in kotlin.Int
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlLayout.kt:82:34 Unresolved reference: version
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/ControlStore.kt:14:49 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:147:47 Illegal escape: ''\f''
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:206:25 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
-public inline fun <T> Array<out TypeVariable(T)>.forEachIndexed(action: (index: Int, TypeVariable(T)) -> Unit): Unit defined in kotlin.collections
-public inline fun BooleanArray.forEachIndexed(action: (index: Int, Boolean) -> Unit): Unit defined in kotlin.collections
-public inline fun ByteArray.forEachIndexed(action: (index: Int, Byte) -> Unit): Unit defined in kotlin.collections
-public inline fun CharArray.forEachIndexed(action: (index: Int, Char) -> Unit): Unit defined in kotlin.collections
-public inline fun CharSequence.forEachIndexed(action: (index: Int, Char) -> Unit): Unit defined in kotlin.text
-public inline fun DoubleArray.forEachIndexed(action: (index: Int, Double) -> Unit): Unit defined in kotlin.collections
-public inline fun FloatArray.forEachIndexed(action: (index: Int, Float) -> Unit): Unit defined in kotlin.collections
-public inline fun IntArray.forEachIndexed(action: (index: Int, Int) -> Unit): Unit defined in kotlin.collections
-public inline fun LongArray.forEachIndexed(action: (index: Int, Long) -> Unit): Unit defined in kotlin.collections
-public inline fun ShortArray.forEachIndexed(action: (index: Int, Short) -> Unit): Unit defined in kotlin.collections
-public inline fun UByteArray.forEachIndexed(action: (index: Int, UByte) -> Unit): Unit defined in kotlin.collections
-public inline fun UIntArray.forEachIndexed(action: (index: Int, UInt) -> Unit): Unit defined in kotlin.collections
-public inline fun ULongArray.forEachIndexed(action: (index: Int, ULong) -> Unit): Unit defined in kotlin.collections
-public inline fun UShortArray.forEachIndexed(action: (index: Int, UShort) -> Unit): Unit defined in kotlin.collections
-public inline fun <T> Iterable<TypeVariable(T)>.forEachIndexed(action: (index: Int, TypeVariable(T)) -> Unit): Unit defined in kotlin.collections
-public inline fun <T> Sequence<TypeVariable(T)>.forEachIndexed(action: (index: Int, TypeVariable(T)) -> Unit): Unit defined in kotlin.sequences
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:206:42 Cannot infer a type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:206:47 Cannot infer a type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/JsonLite.kt:227:18 Illegal escape: ''\f''
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:32:48 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
-public fun BooleanArray.toTypedArray(): Array<Boolean> defined in kotlin.collections
-public fun ByteArray.toTypedArray(): Array<Byte> defined in kotlin.collections
-public fun CharArray.toTypedArray(): Array<Char> defined in kotlin.collections
-public fun DoubleArray.toTypedArray(): Array<Double> defined in kotlin.collections
-public fun FloatArray.toTypedArray(): Array<Float> defined in kotlin.collections
-public fun IntArray.toTypedArray(): Array<Int> defined in kotlin.collections
-public fun LongArray.toTypedArray(): Array<Long> defined in kotlin.collections
-public fun ShortArray.toTypedArray(): Array<Short> defined in kotlin.collections
-public fun UByteArray.toTypedArray(): Array<UByte> defined in kotlin.collections
-public fun UIntArray.toTypedArray(): Array<UInt> defined in kotlin.collections
-public fun ULongArray.toTypedArray(): Array<ULong> defined in kotlin.collections
-public fun UShortArray.toTypedArray(): Array<UShort> defined in kotlin.collections
-public inline fun <reified T> Collection<TypeVariable(T)>.toTypedArray(): Array<TypeVariable(T)> defined in kotlin.collections
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:41:25 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:43:61 Unresolved reference: clampAll
-e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:64:42 Unresolved reference: clampAll
+e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:38 Unresolved reference: width
+e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/GameActivity.kt:68:52 Unresolved reference: height
+e: file:///home/runner/work/nfsmw-recomp/nfsmw-recomp/android/app/src/main/java/dev/recompkit/nfsmw/android/layout/LayoutCodec.kt:32:43 Type mismatch: inferred type is Array<MutableMap.MutableEntry<String, JsonValue>> but Pair<String, JsonValue> was expected
 
 > Task :app:mergeExtDexDebug
 
@@ -198,5 +112,5 @@ Execution failed for task ':app:compileReleaseKotlin'.
 > Get more help at https://help.gradle.org.
 ==============================================================================
 
-BUILD FAILED in 1m 37s
+BUILD FAILED in 1m 33s
 40 actionable tasks: 40 executed
