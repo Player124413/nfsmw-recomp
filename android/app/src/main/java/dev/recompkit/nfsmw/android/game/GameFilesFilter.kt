@@ -57,12 +57,17 @@ object GameFilesFilter {
      */
     fun normalizeTopDir(paths: List<String>): Normalized {
         if (paths.isEmpty()) return Normalized(paths, "")
-        val tops = paths.map { it.substringBefore('/').lowercase() }.distinct()
-        if (tops.size != 1) return Normalized(paths, "")
+        val tops = paths.map { it.substringBefore('/') }
+        if (!tops.all { it.lowercase() == tops.first().lowercase() }) return Normalized(paths, "")
         val prefix = tops.first() + "/"
         val stripped = paths.map { it.removePrefix(prefix) }.filter { it.isNotEmpty() }
         if (stripped.size != paths.size) return Normalized(paths, "")
-        val subdirs = stripped.map { it.substringBefore('/').lowercase() }.distinct()
+        // Only real subdirectories count: a flat file list has no slash,
+        // so its "tops" are file names, not a second directory level.
+        val subdirs = stripped.mapNotNull { p ->
+            val i = p.indexOf('/')
+            if (i > 0) p.substring(0, i).lowercase() else null
+        }.distinct()
         return if (subdirs.size >= 2) Normalized(stripped, prefix) else Normalized(paths, "")
     }
 
@@ -73,9 +78,9 @@ object GameFilesFilter {
      * folded to forward slashes.
      */
     fun safeZipPath(name: String): String? {
-        val norm = name.replace('\\', '/').trim('/')
-        if (norm.isEmpty()) return null
-        val parts = norm.split('/').filter { it.isNotEmpty() }
+        val norm = name.replace('\\', '/')
+        if (norm.isEmpty() || norm.endsWith('/')) return null  // the latter: a directory entry
+        val parts = norm.split('/').filter { it.isNotEmpty() }  // drops leading-slash empties
         if (parts.any { it == ".." }) return null
         if (parts.isEmpty()) return null
         return parts.joinToString("/")
