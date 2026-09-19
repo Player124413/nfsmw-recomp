@@ -11,16 +11,11 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.SeekBar
 import android.widget.TextView
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import dev.recompkit_nfsmw.android.game.AssetStager
-
-private val ZIP_MIME_TYPES = arrayOf(
-    "application/zip", "application/x-zip-compressed", "application/octet-stream", "*/*"
-)
 
 /**
  * The launcher: status of the game library and files, Play, touch controls
@@ -37,15 +32,18 @@ class LauncherActivity : AppCompatActivity() {
     private lateinit var playButton: Button
     private lateinit var importRow: View
 
-    private val pickFolder: ActivityResultLauncher<Void?> =
+    // No explicit launcher types: the activity library's SAF contracts
+    // changed their input types between versions, and the no-argument
+    // launch(null) compiles against all of them.
+    private val pickFolder =
         registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
             if (uri != null) {
                 runImport { progress -> AssetStager.importFromTree(this, uri, progress) }
             }
         }
 
-    private val pickZip: ActivityResultLauncher<Array<String>?> =
-        registerForActivityResult(ActivityResultContracts.OpenDocument(ZIP_MIME_TYPES)) { uri ->
+    private val pickZip =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri != null) {
                 runImport { progress -> AssetStager.importFromZip(this, uri, progress) }
             }
@@ -68,7 +66,7 @@ class LauncherActivity : AppCompatActivity() {
         findViewById<Button>(R.id.settings_button).setOnClickListener { showSettingsDialog() }
         findViewById<Button>(R.id.about_button).setOnClickListener { showAboutDialog() }
         findViewById<Button>(R.id.import_folder_button).setOnClickListener { pickFolder.launch(null) }
-        findViewById<Button>(R.id.import_zip_button).setOnClickListener { pickZip.launch(ZIP_MIME_TYPES) }
+        findViewById<Button>(R.id.import_zip_button).setOnClickListener { pickZip.launch(null) }
         playButton.setOnClickListener { onPlay() }
 
         updateStatus()
@@ -142,7 +140,7 @@ class LauncherActivity : AppCompatActivity() {
             .setTitle(R.string.import_prompt_title)
             .setMessage(R.string.import_prompt_body)
             .setPositiveButton(R.string.import_folder) { _, _ -> pickFolder.launch(null) }
-            .setNegativeButton(R.string.import_zip) { _, _ -> pickZip.launch(ZIP_MIME_TYPES) }
+            .setNegativeButton(R.string.import_zip) { _, _ -> pickZip.launch(null) }
             .setNeutralButton(R.string.cancel, null)
             .show()
     }

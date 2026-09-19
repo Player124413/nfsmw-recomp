@@ -10,7 +10,6 @@ import dev.recompkit_nfsmw.android.layout.JsonValue
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
-import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 /**
@@ -140,7 +139,7 @@ object AssetStager {
         }
 
         val normalized = GameFilesFilter.normalizeTopDir(rels)
-        val included = normalized.paths.filter { GameFilesFilter.include(it) }.toSortedArray()
+        val included = normalized.paths.filter { GameFilesFilter.include(it) }.sorted()
         if (included.isEmpty()) {
             return Report(false, 0, 0, "no game files found in the folder (everything was filtered out)")
         }
@@ -184,29 +183,29 @@ object AssetStager {
      */
     fun importFromZip(context: Context, uri: Uri, onProgress: (Progress) -> Unit): Report {
         // Pass 1: list the entries we would copy.
-        val plan = ArrayList<Pair<String, Long>>() // zip name -> known size (0 when unknown)
+        val plan = ArrayList<Pair<String, Long>>() // relative path -> known size (0 when unknown)
         try {
             context.contentResolver.openInputStream(uri)?.use { fis ->
                 val zin = ZipInputStream(BufferedInputStream(fis, 1 shl 20))
-                var e: ZipEntry? = zin.nextEntry
-                while (e != null) {
-                    if (!e.isDirectory) {
-                        plan.add(e.name to (if (e.size >= 0) e.size else 0L))
+                while (true) {
+                    val entry = zin.nextEntry ?: break
+                    if (!entry.isDirectory) {
+                        val rel = GameFilesFilter.safeZipPath(entry.name)
+                        if (rel != null) plan.add(rel to (if (entry.size >= 0) entry.size else 0L))
                     }
                     zin.closeEntry()
-                    e = zin.nextEntry
                 }
             } ?: return Report(false, 0, 0, "could not open the archive")
         } catch (e: IOException) {
             return Report(false, 0, 0, "could not read the archive: " + e.message)
         }
 
-        val rels = plan.map { GameFilesFilter.safeZipPath(it.first) ?: "" }.filter { it.isNotEmpty() }
+        val rels = plan.map { it.first }
         if (rels.isEmpty()) {
             return Report(false, 0, 0, "the archive contains no files")
         }
         val normalized = GameFilesFilter.normalizeTopDir(rels)
-        val included = normalized.paths.filter { GameFilesFilter.include(it) }.toSortedArray()
+        val included = normalized.paths.filter { GameFilesFilter.include(it) }.sorted()
         if (included.isEmpty()) {
             return Report(false, 0, 0, "no game files found in the archive (everything was filtered out)")
         }
@@ -225,10 +224,10 @@ object AssetStager {
         try {
             context.contentResolver.openInputStream(uri)?.use { fis ->
                 val zin = ZipInputStream(BufferedInputStream(fis, 1 shl 20))
-                var e: ZipEntry? = zin.nextEntry
-                while (e != null) {
-                    if (!e.isDirectory) {
-                        val rel = GameFilesFilter.safeZipPath(e.name)?.removePrefix(normalized.strippedPrefix)
+                while (true) {
+                    val entry = zin.nextEntry ?: break
+                    if (!entry.isDirectory) {
+                        val rel = GameFilesFilter.safeZipPath(entry.name)?.removePrefix(normalized.strippedPrefix)
                         if (rel in wanted) {
                             val out = File(outRoot, rel)
                             out.parentFile?.mkdirs()
@@ -241,7 +240,6 @@ object AssetStager {
                         }
                     }
                     zin.closeEntry()
-                    e = zin.nextEntry
                 }
             } ?: return Report(false, filesDone, bytesDone, "could not open the archive")
         } catch (e: IOException) {
