@@ -74,7 +74,20 @@ jobs:
 
       - name: Unit tests and a full build (debug + release)
         working-directory: android
-        run: ./gradlew --no-daemon testReleaseUnitTest assembleDebug assembleRelease
+        run: |
+          set -o pipefail
+          # Problem matcher: surface Kotlin, C++ and AAPT errors as
+          # annotations so failures are visible without raw log access.
+          echo '>> {"owner":"nfsmw-android","pattern":[{"level":"error","regexp":"^e: file://(.+): \\((\\d+), (\\d+)\\): (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(.+):(\\d+):(\\d+): error: (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(AAPT: error: .+)$","message":1},{"level":"warning","regexp":"^(> Task .+ FAILED)$","message":1}]}'
+          ./gradlew --no-daemon testReleaseUnitTest assembleDebug assembleRelease 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Upload the build log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-log
+          path: ${{ runner.temp }}/build.log
+          if-no-files-found: warn
 
       - name: Lint (report only)
         working-directory: android
@@ -164,7 +177,18 @@ jobs:
 
       - name: Build the release APK
         working-directory: android
-        run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
+        run: |
+          set -o pipefail
+          echo '>> {"owner":"nfsmw-android","pattern":[{"level":"error","regexp":"^e: file://(.+): \\((\\d+), (\\d+)\\): (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(.+):(\\d+):(\\d+): error: (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(AAPT: error: .+)$","message":1},{"level":"warning","regexp":"^(> Task .+ FAILED)$","message":1}]}'
+          ./gradlew --no-daemon testReleaseUnitTest assembleRelease 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Upload the build log (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-log
+          path: ${{ runner.temp }}/build.log
+          if-no-files-found: warn
 
       - name: Name the APK
         id: apk
