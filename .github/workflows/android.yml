@@ -102,9 +102,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -uo pipefail
+          # The runner wraps this with -eo pipefail; a failing command
+          # substitution (git show on a missing ref) would kill the step,
+          # so turn -e/-u off and handle every error explicitly.
+          set +eu -o pipefail
           LOG="$RUNNER_TEMP/build.log"
-          [ -s "$LOG" ] || { echo "no log to commit"; exit 0; }
+          if [ ! -s "$LOG" ]; then
+            echo "no log to commit"
+            exit 0
+          fi
           mkdir -p ci
           {
             echo "# Last failed Android build log (auto-updated by CI; safe to delete)"
@@ -113,18 +119,21 @@ jobs:
           } > ci/last-failure.log
           # Identical failures must not retrigger forever: compare without
           # the run-id line.
-          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:')
-          next=$(grep -v '^# run:' ci/last-failure.log)
+          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:' || true)
+          next=$(grep -v '^# run:' ci/last-failure.log || true)
           if [ -n "$current" ] && [ "$current" = "$next" ]; then
             echo "failure log unchanged - not pushing"
             exit 0
           fi
           git config user.name "arena-ai-coding-agent"
           git config user.email "arena-ai-coding-agent@users.noreply.github.com"
-          git add -f ci/last-failure.log  # -f: the repo ignores *.log
+          git add -f ci/last-failure.log || exit 1  # -f: the repo ignores *.log
           git commit -m "ci: Android build failure log" || exit 0
           git pull --rebase origin "$GITHUB_REF" || exit 0
-          git push origin "HEAD:$GITHUB_REF" || echo "could not push the failure log"
+          if ! git push origin "HEAD:$GITHUB_REF"; then
+            echo "could not push the failure log"
+            exit 0
+          fi
 
       - name: Lint (report only)
         working-directory: android
@@ -238,9 +247,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -uo pipefail
+          # The runner wraps this with -eo pipefail; a failing command
+          # substitution (git show on a missing ref) would kill the step,
+          # so turn -e/-u off and handle every error explicitly.
+          set +eu -o pipefail
           LOG="$RUNNER_TEMP/build.log"
-          [ -s "$LOG" ] || { echo "no log to commit"; exit 0; }
+          if [ ! -s "$LOG" ]; then
+            echo "no log to commit"
+            exit 0
+          fi
           mkdir -p ci
           {
             echo "# Last failed Android build log (auto-updated by CI; safe to delete)"
@@ -249,18 +264,21 @@ jobs:
           } > ci/last-failure.log
           # Identical failures must not retrigger forever: compare without
           # the run-id line.
-          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:')
-          next=$(grep -v '^# run:' ci/last-failure.log)
+          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:' || true)
+          next=$(grep -v '^# run:' ci/last-failure.log || true)
           if [ -n "$current" ] && [ "$current" = "$next" ]; then
             echo "failure log unchanged - not pushing"
             exit 0
           fi
           git config user.name "arena-ai-coding-agent"
           git config user.email "arena-ai-coding-agent@users.noreply.github.com"
-          git add -f ci/last-failure.log  # -f: the repo ignores *.log
+          git add -f ci/last-failure.log || exit 1  # -f: the repo ignores *.log
           git commit -m "ci: Android build failure log" || exit 0
           git pull --rebase origin "$GITHUB_REF" || exit 0
-          git push origin "HEAD:$GITHUB_REF" || echo "could not push the failure log"
+          if ! git push origin "HEAD:$GITHUB_REF"; then
+            echo "could not push the failure log"
+            exit 0
+          fi
 
       - name: Name the APK
         id: apk
