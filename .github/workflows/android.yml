@@ -1,0 +1,218 @@
+name: Android
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      zip_url:
+        description: "Link to the zip with libnfsmw.so and the game files (see docs/android.md)"
+        required: true
+        type: string
+      zip_token:
+        description: "Optional bearer token, if the zip link is private"
+        required: false
+        type: string
+        default: ""
+      version_name:
+        description: "Version name (X.Y.Z)"
+        required: false
+        type: string
+        default: "1.0.0"
+      create_release:
+        description: "Publish a GitHub Release with the APK"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  # Every push/PR: the shell must build and pass its tests with no game
+  # library at all. This is what keeps the launcher itself bug-free.
+  launcher-check:
+    name: Launcher build (no game library)
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+        with:
+          cache: true
+
+      - name: Accept the SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null
+
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/wrapper
+            ~/.gradle/caches
+          key: nfsmw-android-gradle-8.9
+
+      - name: Generate the Gradle wrapper
+        working-directory: android
+        run: gradle wrapper --gradle-version 8.9 --no-daemon
+
+      - name: Unit tests and a full build (debug + release)
+        working-directory: android
+        run: ./gradlew --no-daemon testReleaseUnitTest assembleDebug assembleRelease
+
+      - name: Lint (report only)
+        working-directory: android
+        run: ./gradlew --no-daemon lintDebug
+
+  # Manual: the release build. Everything that is not the shell - the game
+  # library and the game files - comes in as one uploaded zip.
+  android-apk:
+    name: Android APK from the uploaded zip
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the zip
+        env:
+          ZIP_URL: ${{ inputs.zip_url }}
+          ZIP_TOKEN: ${{ inputs.zip_token }}
+        run: |
+          set -euo pipefail
+          args=( -fL --retry 3 --max-time 5400 )
+          if [ -n "$ZIP_TOKEN" ]; then
+            args+=( -H "Authorization: Bearer $ZIP_TOKEN" )
+          fi
+          curl "${args[@]}" "$ZIP_URL" -o "$RUNNER_TEMP/release.zip"
+          ls -lh "$RUNNER_TEMP/release.zip"
+
+      - name: Validate the zip and stage it into the app
+        env:
+          ZIP_URL: ${{ inputs.zip_url }}
+          VERSION_NAME: ${{ inputs.version_name }}
+        run: |
+          set -euo pipefail
+          python3 tools/android/validate_zip.py "$RUNNER_TEMP/release.zip" \
+            --stage android/app/src/main \
+            --report "$RUNNER_TEMP/zip-report.json" \
+            --version-name "$VERSION_NAME" \
+            --source-url "$ZIP_URL" \
+            --built-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+        with:
+          cache: true
+
+      - name: Accept the SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null
+
+      - name: Restore the signing key
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p android/keystore
+          base64 -d <<< "$KEYSTORE_B64" > android/keystore/release.keystore
+          echo "KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> "$GITHUB_ENV"
+          echo "KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> "$GITHUB_ENV"
+
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/wrapper
+            ~/.gradle/caches
+          key: nfsmw-android-gradle-8.9
+
+      - name: Generate the Gradle wrapper
+        working-directory: android
+        run: gradle wrapper --gradle-version 8.9 --no-daemon
+
+      - name: Build the release APK
+        working-directory: android
+        run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
+
+      - name: Name the APK
+        id: apk
+        run: |
+          set -euo pipefail
+          BUILD_ID=$(python3 -c "import json;print(json.load(open('$RUNNER_TEMP/zip-report.json'))['shas']['zip'][:12])")
+          SRC=android/app/build/outputs/apk/release/app-release.apk
+          DEST="nfsmw-android-v${VERSION_NAME}-${BUILD_ID}-arm64.apk"
+          cp "$SRC" "$GITHUB_WORKSPACE/$DEST"
+          ls -lh "$GITHUB_WORKSPACE/$DEST"
+          echo "apk_name=$DEST" >> "$GITHUB_OUTPUT"
+        env:
+          VERSION_NAME: ${{ inputs.version_name }}
+
+      - name: Check the APK size against GitHub's limits
+        id: size
+        run: |
+          set -euo pipefail
+          BYTES=$(stat -c%s "$GITHUB_WORKSPACE/${{ steps.apk.outputs.apk_name }}")
+          MB=$(( BYTES / 1024 / 1024 ))
+          echo "the APK is $MB MB (GitHub artifacts and release assets top out at 2048 MB)"
+          if [ "$BYTES" -gt 2147483648 ]; then
+            echo "too_big=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "too_big=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload the APK
+        if: steps.size.outputs.too_big == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.apk_name }}
+          path: ${{ steps.apk.outputs.apk_name }}
+          if-no-files-found: error
+
+      # APKs over 2 GB cannot be GitHub artifacts or release assets; ship
+      # them to S3 instead. Set the repository secrets S3_BUCKET,
+      # S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY (and S3_ENDPOINT_URL for
+      # R2/MinIO/...).
+      - name: Upload the APK to S3 (it is over 2 GB)
+        if: steps.size.outputs.too_big == 'true'
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_KEY: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_ENDPOINT: ${{ secrets.S3_ENDPOINT_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${S3_BUCKET:-}" ] || [ -z "${S3_KEY:-}" ] || [ -z "${S3_SECRET:-}" ]; then
+            echo "::error::the APK is over 2 GB, so it cannot be a GitHub artifact or release asset. Configure the S3 secrets (S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, optionally S3_ENDPOINT_URL) - or rebuild the zip without MOVIES/ and most of SOUND/ to bring the APK under 2 GB."
+            exit 1
+          fi
+          args=( "s3://$S3_BUCKET/android/${{ steps.apk.outputs.apk_name }}" )
+          [ -n "${S3_ENDPOINT:-}" ] && args+=( --endpoint-url "$S3_ENDPOINT" )
+          aws s3 cp "$GITHUB_WORKSPACE/${{ steps.apk.outputs.apk_name }}" \
+            "${args[@]}" --only-show-errors
+          echo "uploaded to s3://$S3_BUCKET/android/${{ steps.apk.outputs.apk_name }}"
+
+      - name: Create the release
+        if: ${{ inputs.create_release && steps.size.outputs.too_big == 'false' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v${{ inputs.version_name }}-r${{ github.run_id }}
+          name: Android v${{ inputs.version_name }} (build ${{ github.run_id }})
+          files: ${{ steps.apk.outputs.apk_name }}
+          generate_release_notes: true

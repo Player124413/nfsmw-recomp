@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Android port, shell side. `android/` is a complete launcher app: status
+  card, Play with one-time game-file staging, settings (render scale, frame
+  limit, sound, haptics), about, and touch controls with an Edit mode —
+  drag to move, pinch or slider to resize, double-tap or long-press to hide,
+  reset, persisted and re-clamped per screen. A JNI bridge
+  (`src/main/cpp/bridge.cpp`) loads the recompiled game
+  (`libnfsmw.so`, arm64) through the ABI in `nfsmw_android.h` and degrades
+  cleanly when the library or symbols are missing. `tools/android/` builds
+  and validates the release zip (`make_zip.py`, `validate_zip.py`); the
+  Android workflow takes one zip link and produces the APK
+  (artifact or GitHub Release, signed from repository secrets). Pushes run a
+  full build and the unit tests with no game library at all.
 - The translation compiles and the game boots as far as its first Direct3D 9
   call. `game.toml` names two CRT helper entry points the Ghidra listing
   lacks; everything else was kit work (see the kit's changelog): MMX/SSE2

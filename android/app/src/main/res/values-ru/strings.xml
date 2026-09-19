@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="launcher_title">Need for Speed: Most Wanted</string>
+    <string name="launcher_subtitle">Recomp — порт для Android</string>
+    <string name="launcher_footnote">Вам нужна собственная копия игры. Игровые файлы вместе с проектом не распространяются.</string>
+    <string name="build_chip_release">Сборка %1$s · %2$s</string>
+    <string name="build_chip_dev">Разработческая оболочка</string>
+    <string name="status_binary">Игровая библиотека</string>
+    <string name="status_binary_built">Собрана · %1$s (lib %2$s…)</string>
+    <string name="status_binary_missing">Не входит в эту сборку (разработческая оболочка)</string>
+    <string name="status_files">Игровые файлы</string>
+    <string name="status_files_staged">Развёрнуты — %1$d файлов</string>
+    <string name="status_files_bundled">%1$d файлов · %2$s — скопируются при первом запуске</string>
+    <string name="status_files_none">В этой сборке их нет</string>
+    <string name="status_device">Устройство</string>
+    <string name="status_device_value">%1$s · Android %2$s</string>
+    <string name="play">Играть</string>
+    <string name="controls">Сенсорное управление</string>
+    <string name="settings">Настройки</string>
+    <string name="about">О сборке</string>
+    <string name="ok">ОК</string>
+
+    <string name="staging_title">Готовим игровые файлы</string>
+    <string name="staging_body">Копируем %1$d из %2$d — %3$s из %4$s</string>
+    <string name="staging_failed">Не удалось подготовить игровые файлы</string>
+
+    <string name="settings_render_scale">Масштаб рендера</string>
+    <string name="settings_frame_limit">Лимит кадров</string>
+    <string name="settings_unlimited">Без лимита</string>
+    <string name="settings_fps_value">%1$d fps</string>
+    <string name="settings_audio">Звук</string>
+    <string name="settings_haptics">Вибрация</string>
+
+    <string name="about_title">О этой сборке</string>
+    <string name="about_body">Need for Speed: Most Wanted (2005, PC Black Edition) — рекомпиляция для Android.\n\nВерсия %1$s\nСборка %2$s\nИгровая библиотека %3$s\nИгровые файлы: %4$d\nРазмер файлов %5$s\nИсточник %6$s\nСобрано %7$s\n\nЛаунчер, сенсорное управление и эта сборочная линия лежат в репозитории nfsmw-recomp; игровая библиотека и файлы — из вашей собственной сборки перекомпилированной игры.\n\nВам нужна собственная копия игры.</string>
+
+    <string name="no_game_title">Нет игровой библиотеки</string>
+    <string name="no_game_body">В этой сборке лаунчера нет игровой библиотеки. Соберите APK из релизного zip (workflow «Android») и установите её.</string>
+    <string name="quit_title">Покинуть игру</string>
+    <string name="quit_message">Игра работает в процессе приложения. Попросите её завершиться или остановите приложение принудительно.</string>
+    <string name="quit_request">Запросить выход</string>
+    <string name="quit_force">Принудительно</string>
+    <string name="error_title">Игра не запустилась</string>
+    <string name="error_unknown">неизвестная ошибка</string>
+    <string name="error_copy_log">Скопировать лог</string>
+    <string name="error_back">Назад в лаунчер</string>
+
+    <string name="edit_title">Сенсорное управление</string>
+    <string name="edit_hint">Тащите кнопку, чтобы переместить. Щипком или ползунком — изменить размер. Касание — выбор, двойное касание — скрыть/показать.</string>
+    <string name="edit_size">Размер</string>
+    <string name="edit_size_value">%1$d dp</string>
+    <string name="edit_size_none">—</string>
+    <string name="edit_done">Готово</string>
+    <string name="edit_reset">Сбросить раскладку</string>
+
+    <string name="cd_play">Запустить игру</string>
+    <string name="cd_play_disabled">Запустить игру (в этой сборке нет игровой библиотеки)</string>
+    <string name="cd_edit">Изменить сенсорное управление</string>
+    <string name="cd_reset">Сбросить раскладку кнопок</string>
+    <string name="cd_done">Завершить редактирование</string>
+    <string name="cd_eye">Показать или скрыть эту кнопку</string>
+
+    <string name="label_accel">ГАЗ</string>
+    <string name="label_brake">ТОРМОЗ</string>
+    <string name="label_handbrake">РУЧНИК</string>
+</resources>

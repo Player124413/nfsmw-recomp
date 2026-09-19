@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NFS MW: Recomp</string>
+
+    <!-- Launcher -->
+    <string name="launcher_title">Need for Speed: Most Wanted</string>
+    <string name="launcher_subtitle">Recomp — Android port</string>
+    <string name="launcher_footnote">You need your own copy of the game. No game files are distributed with this project.</string>
+    <string name="build_chip_release">Build %1$s · %2$s</string>
+    <string name="build_chip_dev">Development shell</string>
+    <string name="status_binary">Game library</string>
+    <string name="status_binary_built">Built · %1$s (lib %2$s…)</string>
+    <string name="status_binary_missing">Not bundled in this build (development shell)</string>
+    <string name="status_files">Game files</string>
+    <string name="status_files_staged">Staged — %1$d files</string>
+    <string name="status_files_bundled">%1$d files · %2$s — copied on first launch</string>
+    <string name="status_files_none">None in this build</string>
+    <string name="status_device">Device</string>
+    <string name="status_device_value">%1$s · Android %2$s</string>
+    <string name="play">Play</string>
+    <string name="controls">Touch controls</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="ok">OK</string>
+
+    <!-- Staging -->
+    <string name="staging_title">Preparing game files</string>
+    <string name="staging_body">Copying %1$d of %2$d files — %3$s of %4$s</string>
+    <string name="staging_failed">Preparing the game files failed</string>
+
+    <!-- Settings -->
+    <string name="settings_render_scale">Render scale</string>
+    <string name="settings_frame_limit">Frame limit</string>
+    <string name="settings_unlimited">Unlimited</string>
+    <string name="settings_fps_value">%1$d fps</string>
+    <string name="settings_audio">Sound</string>
+    <string name="settings_haptics">Vibration</string>
+
+    <!-- About -->
+    <string name="about_title">About this build</string>
+    <string name="about_body">Need for Speed: Most Wanted (2005, PC Black Edition), recompiled for Android.\n\nVersion %1$s\nBuild %2$s\nGame library %3$s\nGame files %4$d\nFiles size %5$s\nSource %6$s\nBuilt %7$s\n\nThe launcher, the touch controls and this pipeline live in the nfsmw-recomp repository; the game library and the game files come from your own build of the recompiled game.\n\nYou need your own copy of the game.</string>
+
+    <!-- Game -->
+    <string name="no_game_title">No game library</string>
+    <string name="no_game_body">This build of the launcher does not include the game library. Build an APK from a release zip (the Android workflow) and install it.</string>
+    <string name="quit_title">Leave the game</string>
+    <string name="quit_message">The game runs in the app process. Ask it to quit, or force-stop the app.</string>
+    <string name="quit_request">Request quit</string>
+    <string name="quit_force">Force stop</string>
+    <string name="error_title">The game did not start</string>
+    <string name="error_unknown">unknown error</string>
+    <string name="error_copy_log">Copy log</string>
+    <string name="error_back">Back to launcher</string>
+
+    <!-- Controls editor -->
+    <string name="edit_title">Touch controls</string>
+    <string name="edit_hint">Drag a button to move it. Pinch it, or use the slider, to resize it. Tap to select, double-tap to hide or show.</string>
+    <string name="edit_size">Size</string>
+    <string name="edit_size_value">%1$d dp</string>
+    <string name="edit_size_none">—</string>
+    <string name="edit_done">Done</string>
+    <string name="edit_reset">Reset layout</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_play">Start the game</string>
+    <string name="cd_play_disabled">Start the game (no game library in this build)</string>
+    <string name="cd_edit">Edit the touch controls</string>
+    <string name="cd_reset">Reset the touch control layout</string>
+    <string name="cd_done">Finish editing</string>
+    <string name="cd_eye">Show or hide this button</string>
+
+    <!-- Button labels -->
+    <string name="label_accel">GAS</string>
+    <string name="label_brake">BRAKE</string>
+    <string name="label_handbrake">HANDBRAKE</string>
+</resources>

@@ -4,7 +4,8 @@
 [Testing](docs/testing.md) · [Changelog](CHANGELOG.md)
 
 A recompilation of **Need for Speed: Most Wanted** (the 2005 PC Black
-Edition) for macOS, iPad, Linux, Windows and the browser, in progress.
+Edition) for macOS, iPad, Android, Linux, Windows and the browser, in
+progress.
 Original game instructions are translated to C ahead of time and compiled
 with the native host, the way
 [populous-recomp](https://github.com/veritr1x/populous-recomp) does it.
@@ -32,6 +33,11 @@ MoltenVK) and WebGPU (the browser).
   run with every option at maximum holds 110-123 fps.
 - **iPad.** Plays by touch; the core mods are compiled into the app, which a
   stock device needs because it loads no plugins.
+- **Android.** The shell is here: a launcher, a full-screen game activity and
+  touch controls with an Edit mode (move, resize, hide), plus a pipeline that
+  turns one zip — the recompiled game library (`libnfsmw.so`, arm64) and the
+  game files — into a signed APK. The game library builds for the shell's ABI
+  (`docs/android.md` describes the zip, the ABI and the launcher).
 - **Linux.** Renders the race, including under software Vulkan (lavapipe).
 - **Windows.** Cross-compiled with llvm-mingw; runs the whole test script at
   100-170 fps under CrossOver. A run on Windows hardware is still untested.

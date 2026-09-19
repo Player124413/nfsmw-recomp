@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Speedometer arc: 135 degrees to -45 degrees through the top. -->
+    <path
+        android:pathData="M35.62,35.62 A26,26 0 1 1 72.38,72.38"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+    <!-- Needle. -->
+    <path
+        android:pathData="M54,54 L68.14,39.86"
+        android:strokeColor="#FFE63946"
+        android:strokeWidth="5"
+        android:strokeLineCap="round" />
+    <!-- Hub. -->
+    <path
+        android:pathData="M54,50a4,4 0 1 1 0,8 4,4 0 0 1 0,-8z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

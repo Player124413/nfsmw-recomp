@@ -45,3 +45,14 @@ __pycache__/
 *.mus
 *.tpk
 *.asi
+
+# Android: build outputs, CI-staged inputs (the release zip's contents) and
+# the signing key. android/app/src/main/java/.../BuildInfo.kt is tracked; CI
+# overwrites it with the staged build's values.
+/android/.gradle/
+/android/app/build/
+/android/build/
+/android/local.properties
+/android/keystore/
+/android/app/src/main/assets/game/
+/android/app/src/main/jniLibs/
