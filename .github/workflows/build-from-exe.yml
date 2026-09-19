@@ -1,0 +1,146 @@
+name: Recompile from speed.exe and Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      exe_url:
+        description: 'Direct download URL to speed.exe (PC Black Edition v1.3)'
+        required: true
+        type: string
+      version_name:
+        description: 'Version name for the APK'
+        required: false
+        default: '1.0.0'
+        type: string
+
+concurrency:
+  group: recomp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recompile-and-build:
+    name: Recompile speed.exe and Package APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ninja-build cmake unzip wget curl
+
+      - name: Cache Ghidra
+        id: cache-ghidra
+        uses: actions/cache@v4
+        with:
+          path: /opt/ghidra_12.1.3_PUBLIC
+          key: ghidra-12.1.3-public
+
+      - name: Download and install Ghidra 12.1.3
+        if: steps.cache-ghidra.outputs.cache-hit != 'true'
+        run: |
+          GHIDRA_ZIP="ghidra_12.1.3_PUBLIC_20241015.zip"
+          GHIDRA_URL="https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.3_build/${GHIDRA_ZIP}"
+          echo "Downloading Ghidra 12.1.3..."
+          curl -fL -o /tmp/ghidra.zip "${GHIDRA_URL}"
+          sudo unzip -q /tmp/ghidra.zip -d /opt/
+          rm -f /tmp/ghidra.zip
+          test -f /opt/ghidra_12.1.3_PUBLIC/support/analyzeHeadless
+
+      - name: Download and verify speed.exe
+        run: |
+          mkdir -p original/retail
+          echo "Downloading speed.exe from provided URL..."
+          curl -fL -o original/retail/speed.exe "${{ github.event.inputs.exe_url }}"
+          
+          EXPECTED_SHA="80774c2e5d619b4f120b48d4462896fd504c263399d203a238769cffde1d253c"
+          ACTUAL_SHA=$(sha256sum original/retail/speed.exe | awk '{print $1}')
+          FILE_SIZE=$(stat -c%s original/retail/speed.exe)
+
+          echo "File size: $FILE_SIZE bytes"
+          echo "SHA-256:   $ACTUAL_SHA"
+
+          if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+            echo "::error::Provided executable does not match the expected Need for Speed: Most Wanted (Black Edition v1.3) executable!"
+            echo "::error::Expected SHA-256: $EXPECTED_SHA"
+            echo "::error::Actual SHA-256:   $ACTUAL_SHA"
+            exit 1
+          fi
+          echo "speed.exe successfully verified!"
+
+      - name: Cache Ghidra decompilation listings
+        id: cache-decomp
+        uses: actions/cache@v4
+        with:
+          path: analysis/decompiled
+          key: nfsmw-analysis-decompiled-80774c2e5d619b4f
+
+      - name: Run Ghidra analysis and export listings
+        if: steps.cache-decomp.outputs.cache-hit != 'true'
+        run: |
+          python3 tools/setup.py --install "$PWD" --link-only
+          python3 tools/analyze.py --ghidra-home /opt/ghidra_12.1.3_PUBLIC --max-memory 6G
+
+      - name: Install Android NDK and SDK tools
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools ndk;26.1.10909125"
+
+      - name: Install Python kit requirements
+        run: |
+          pip install -r kit/tools/requirements.txt || true
+
+      - name: Regenerate C code and compile Android library
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/26.1.10909125
+        run: |
+          python3 tools/build.py --target android --regenerate --jobs 4
+
+      - name: Prepare slim release zip with libnfsmw.so
+        run: |
+          SO_PATH=$(find build -name "libmain.so" -o -name "libnfsmw.so" | grep "arm64-v8a" | head -n 1 || find build -name "*.so" | grep "arm64" | head -n 1)
+          if [ -z "$SO_PATH" ] || [ ! -f "$SO_PATH" ]; then
+            echo "Searching for compiled .so..."
+            find build -name "*.so"
+            echo "::error::Could not find compiled Android shared library in build directory!"
+            exit 1
+          fi
+          echo "Found compiled library at: $SO_PATH"
+          python3 tools/android/make_zip.py --lib "$SO_PATH" --out release-slim.zip
+          python3 tools/android/validate_zip.py release-slim.zip
+
+      - name: Stage into Android launcher and build APK
+        working-directory: android
+        run: |
+          python3 ../tools/android/validate_zip.py ../release-slim.zip --stage app/src/main --version "${{ github.event.inputs.version_name }}"
+          # Generate wrapper if needed
+          if [ ! -x ./gradlew ]; then
+            curl -fsSL -o /tmp/gradle-8.9.zip https://services.gradle.org/distributions/gradle-8.9-bin.zip
+            unzip -q /tmp/gradle-8.9.zip -d /opt
+            /opt/gradle-8.9/bin/gradle wrapper --gradle-version 8.9 --no-daemon
+          fi
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload compiled APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nfsmw-android-full-recomp-apk
+          path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
