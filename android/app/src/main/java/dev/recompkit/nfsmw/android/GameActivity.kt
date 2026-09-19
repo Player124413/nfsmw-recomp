@@ -65,7 +65,7 @@ class GameActivity : AppCompatActivity() {
             override fun surfaceCreated(holder: SurfaceHolder) {
                 if (!started && !errorShown) {
                     started = true
-                    startGame(holder.width, holder.height)
+                    startGame(surface.width, surface.height)
                 }
             }
 

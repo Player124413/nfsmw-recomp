@@ -84,6 +84,6 @@ class LayoutCodecTest {
     @Test
     fun encodeIsStable() {
         val l = ControlLayout.defaults()
-        assertEquals(JsonLite.encode(l), JsonLite.encode(l.copy()))
+        assertEquals(LayoutCodec.encode(l), LayoutCodec.encode(l.copy()))
     }
 }

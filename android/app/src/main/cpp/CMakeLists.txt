@@ -8,4 +8,5 @@ add_library(nfsbridge SHARED bridge.cpp)
 target_compile_features(nfsbridge PRIVATE cxx_std_17)
 target_compile_options(nfsbridge PRIVATE -O2 -fvisibility=hidden -Wall -Wextra)
 target_include_directories(nfsbridge PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(nfsbridge log dl)
+# dlopen/dlsym resolve from libc on bionic; only log is needed explicitly.
+target_link_libraries(nfsbridge log)
