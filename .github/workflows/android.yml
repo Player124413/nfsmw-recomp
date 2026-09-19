@@ -50,10 +50,7 @@ jobs:
 
       - uses: android-actions/setup-android@v3
         with:
-          cache: true
-
-      - name: Accept the SDK licenses
-        run: yes | sdkmanager --licenses > /dev/null
+          accept-android-sdk-licenses: true
 
       - name: Gradle cache
         uses: actions/cache@v4
@@ -118,10 +115,7 @@ jobs:
 
       - uses: android-actions/setup-android@v3
         with:
-          cache: true
-
-      - name: Accept the SDK licenses
-        run: yes | sdkmanager --licenses > /dev/null
+          accept-android-sdk-licenses: true
 
       # GitHub Actions does not allow the secrets context inside if:
       # expressions, so the "is a key configured" test happens in the shell.
