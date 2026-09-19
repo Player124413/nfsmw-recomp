@@ -20,7 +20,7 @@ class LayoutCodecTest {
         modified.button(ButtonId.MENU).sizeDp = 100
         modified.button(ButtonId.MAP).visible = false
 
-        val back = LayoutCodec.decode(JsonLite.encode(modified), base, screenW, screenH, density)
+        val back = LayoutCodec.decode(LayoutCodec.encode(modified), base, screenW, screenH, density)
         assertEquals(0.5f, back.button(ButtonId.ACCEL).x, 0.001f)
         assertEquals(0.5f, back.button(ButtonId.ACCEL).y, 0.001f)
         assertEquals(100, back.button(ButtonId.MENU).sizeDp)

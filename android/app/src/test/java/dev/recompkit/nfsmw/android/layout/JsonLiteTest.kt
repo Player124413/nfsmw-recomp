@@ -23,7 +23,7 @@ class JsonLiteTest {
 
     @Test
     fun wholeNumbersStayWhole() {
-        assertEquals(1, (JsonLite.parse(JsonLite.encode(JsonLite.num(2.0))) as JsonValue.Num).value, 0.0)
+        assertEquals(1.0, (JsonLite.parse(JsonLite.encode(JsonLite.num(2.0))) as JsonValue.Num).value, 0.0)
         assertTrue("\"x\": 3" in JsonLite.encode(JsonLite.obj("x" to JsonLite.num(3.0))))
     }
 
