@@ -104,6 +104,14 @@ jobs:
             exit 1
           fi
 
+      - name: Upload the shell APKs (success; dev build, no game library)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nfsmw-android-shell
+          path: android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+
       - name: Upload the build log (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
