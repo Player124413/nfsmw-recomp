@@ -79,7 +79,15 @@ jobs:
           # Problem matcher: surface Kotlin, C++ and AAPT errors as
           # annotations so failures are visible without raw log access.
           echo '>> {"owner":"nfsmw-android","pattern":[{"level":"error","regexp":"^e: file://(.+): \\((\\d+), (\\d+)\\): (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(.+):(\\d+):(\\d+): error: (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(AAPT: error: .+)$","message":1},{"level":"warning","regexp":"^(> Task .+ FAILED)$","message":1}]}'
-          ./gradlew --no-daemon testReleaseUnitTest assembleDebug assembleRelease 2>&1 | tee "$RUNNER_TEMP/build.log"
+          if ! ./gradlew --no-daemon testReleaseUnitTest assembleDebug assembleRelease 2>&1 | tee "$RUNNER_TEMP/build.log"; then
+            # The step summary is readable via the API even when raw logs
+            # are not: dump the interesting tail there.
+            {
+              echo "### Build failed — last 150 lines"
+              tail -n 150 "$RUNNER_TEMP/build.log"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - name: Upload the build log (on failure)
         if: failure()
@@ -180,7 +188,13 @@ jobs:
         run: |
           set -o pipefail
           echo '>> {"owner":"nfsmw-android","pattern":[{"level":"error","regexp":"^e: file://(.+): \\((\\d+), (\\d+)\\): (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(.+):(\\d+):(\\d+): error: (.+)$","file":1,"line":2,"col":3,"message":4},{"level":"error","regexp":"^(AAPT: error: .+)$","message":1},{"level":"warning","regexp":"^(> Task .+ FAILED)$","message":1}]}'
-          ./gradlew --no-daemon testReleaseUnitTest assembleRelease 2>&1 | tee "$RUNNER_TEMP/build.log"
+          if ! ./gradlew --no-daemon testReleaseUnitTest assembleRelease 2>&1 | tee "$RUNNER_TEMP/build.log"; then
+            {
+              echo "### Build failed — last 150 lines"
+              tail -n 150 "$RUNNER_TEMP/build.log"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       - name: Upload the build log (on failure)
         if: failure()
