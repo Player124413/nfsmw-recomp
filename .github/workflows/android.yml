@@ -97,6 +97,35 @@ jobs:
           path: ${{ runner.temp }}/build.log
           if-no-files-found: warn
 
+      - name: Commit the build log (on failure)
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          LOG="$RUNNER_TEMP/build.log"
+          [ -s "$LOG" ] || { echo "no log to commit"; exit 0; }
+          mkdir -p ci
+          {
+            echo "# Last failed Android build log (auto-updated by CI; safe to delete)"
+            echo "# run: $GITHUB_RUN_ID"
+            tail -n 200 "$LOG"
+          } > ci/last-failure.log
+          # Identical failures must not retrigger forever: compare without
+          # the run-id line.
+          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:')
+          next=$(grep -v '^# run:' ci/last-failure.log)
+          if [ -n "$current" ] && [ "$current" = "$next" ]; then
+            echo "failure log unchanged - not pushing"
+            exit 0
+          fi
+          git config user.name "arena-ai-coding-agent"
+          git config user.email "arena-ai-coding-agent@users.noreply.github.com"
+          git add ci/last-failure.log
+          git commit -m "ci: Android build failure log" || exit 0
+          git pull --rebase origin "$GITHUB_REF" || exit 0
+          git push origin "HEAD:$GITHUB_REF" || echo "could not push the failure log"
+
       - name: Lint (report only)
         working-directory: android
         run: ./gradlew --no-daemon lintDebug
@@ -203,6 +232,35 @@ jobs:
           name: build-failure-log
           path: ${{ runner.temp }}/build.log
           if-no-files-found: warn
+
+      - name: Commit the build log (on failure)
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          LOG="$RUNNER_TEMP/build.log"
+          [ -s "$LOG" ] || { echo "no log to commit"; exit 0; }
+          mkdir -p ci
+          {
+            echo "# Last failed Android build log (auto-updated by CI; safe to delete)"
+            echo "# run: $GITHUB_RUN_ID"
+            tail -n 200 "$LOG"
+          } > ci/last-failure.log
+          # Identical failures must not retrigger forever: compare without
+          # the run-id line.
+          current=$(git show "origin/$GITHUB_REF:ci/last-failure.log" 2>/dev/null | grep -v '^# run:')
+          next=$(grep -v '^# run:' ci/last-failure.log)
+          if [ -n "$current" ] && [ "$current" = "$next" ]; then
+            echo "failure log unchanged - not pushing"
+            exit 0
+          fi
+          git config user.name "arena-ai-coding-agent"
+          git config user.email "arena-ai-coding-agent@users.noreply.github.com"
+          git add ci/last-failure.log
+          git commit -m "ci: Android build failure log" || exit 0
+          git pull --rebase origin "$GITHUB_REF" || exit 0
+          git push origin "HEAD:$GITHUB_REF" || echo "could not push the failure log"
 
       - name: Name the APK
         id: apk
